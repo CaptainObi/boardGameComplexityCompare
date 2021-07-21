@@ -25,6 +25,7 @@
 		"@types/morgan": "^1.9.3",
 		"@types/mysql": "^2.15.19",
 		"axios": "^0.21.1",
+		"cors": "^2.8.5",
 		"express": "^4.17.1",
 		"mongodb": "^4.0.0",
 		"morgan": "^1.10.0",

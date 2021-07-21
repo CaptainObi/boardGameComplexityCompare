@@ -1,0 +1,53 @@
+.div {
+	text-align: center;
+	margin: 0;
+	padding: 0;
+	display: grid;
+	grid-template-areas:
+		"topbar topbar topbar"
+		"gameL buttons gameR"
+		"footer footer footer";
+
+	grid-template-columns: 3fr 1fr 3fr;
+
+	grid-template-rows: 70px auto 70px;
+
+	align-items: center;
+	justify-items: center;
+
+	min-height: 100vh;
+}
+
+.gameL {
+	grid-area: gameL;
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.gameR {
+	grid-area: gameR;
+	width: 100%;
+	height: 100%;
+	align-items: center;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.buttons {
+	grid-area: buttons;
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+}
+
+.footer {
+	grid-area: footer;
+	background-color: green;
+	width: 100%;
+	height: 100%;
+}

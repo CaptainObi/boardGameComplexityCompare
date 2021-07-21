@@ -3,7 +3,8 @@ import connection from "./db";
 interface Comparison {
 	GameA: number;
 	GameB: number;
-	Winner: number;
+	WinnerMechanically: number | null;
+	WinnerDepth: number | null;
 	user: number;
 }
 
@@ -35,4 +36,16 @@ const getAll = (result: Function) => {
 	});
 };
 
-export default { create, getAll };
+const getID = (id: number, result: Function) => {
+	connection.query("SELECT * FROM compare WHERE user=?", id, (err, res) => {
+		if (err) {
+			console.log("error: ", err);
+			result(null, err);
+			return;
+		}
+
+		result(null, res);
+	});
+};
+
+export default { create, getAll, getID };

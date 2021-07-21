@@ -4,7 +4,8 @@ import comparison from "../models/comparison";
 interface Comparison {
 	GameA: number;
 	GameB: number;
-	Winner: number;
+	WinnerMechanically: number;
+	WinnerDepth: number;
 	user: number;
 }
 
@@ -13,6 +14,10 @@ const postComparisons = async (
 	res: Response,
 	next: NextFunction
 ) => {
+	const reqBody: any = req.body;
+
+	console.log(reqBody);
+
 	// Validate request
 	if (!req.body) {
 		res.status(400).send({
@@ -22,10 +27,11 @@ const postComparisons = async (
 
 	// Create a Customer
 	const newComparison: Comparison = {
-		GameA: req.body.gameA,
-		GameB: req.body.gameB,
-		Winner: req.body.winner,
-		user: req.body.userID,
+		GameA: reqBody.body.gameA,
+		GameB: reqBody.body.gameB,
+		WinnerMechanically: reqBody.body.winnerMechanically,
+		WinnerDepth: reqBody.body.winnerDepth,
+		user: reqBody.body.userID,
 	};
 
 	// Save Customer in the database
@@ -53,4 +59,18 @@ const getAll = async (req: Request, res: Response, next: NextFunction) => {
 	});
 };
 
-export default { postComparisons, getAll };
+const getID = async (req: Request, res: Response, next: NextFunction) => {
+	// Validate request
+	let id: string = req.params.id;
+	// Save Customer in the database
+	comparison.getID(Number(id), (err: Error, data: Response) => {
+		if (err)
+			res.status(500).send({
+				message:
+					err.message || "Some error occurred while creating the comparison.",
+			});
+		else res.send(data);
+	});
+};
+
+export default { postComparisons, getAll, getID };

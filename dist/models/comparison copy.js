@@ -27,14 +27,4 @@ const getAll = (result) => {
         result(null, res);
     });
 };
-const getID = (id, result) => {
-    db_1.default.query("SELECT * FROM compare WHERE user=?", id, (err, res) => {
-        if (err) {
-            console.log("error: ", err);
-            result(null, err);
-            return;
-        }
-        result(null, res);
-    });
-};
-exports.default = { create, getAll, getID };
+exports.default = { create, getAll };

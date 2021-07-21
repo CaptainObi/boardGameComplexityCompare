@@ -5,7 +5,7 @@ import morgan from "morgan";
 import userRoutes from "./routes/user";
 import gameRoutes from "./routes/game";
 import comparisonRoutes from "./routes/comparison";
-
+import eloRoutes from "./routes/elo";
 const router: Express = express();
 
 /** Logging */
@@ -26,7 +26,6 @@ router.use((req, res, next) => {
 	);
 	// set the CORS method headers
 	if (req.method === "OPTIONS") {
-		res.header("Access-Control-Allow-Methods", "GET PATCH DELETE POST");
 		return res.status(200).json({});
 	}
 	next();
@@ -36,7 +35,7 @@ router.use((req, res, next) => {
 router.use("/user", userRoutes);
 router.use("/game", gameRoutes);
 router.use("/comparison", comparisonRoutes);
-
+router.use("/elo", eloRoutes);
 /** Error handling */
 router.use((req, res, next) => {
 	const error = new Error("not found");
@@ -44,6 +43,8 @@ router.use((req, res, next) => {
 		message: error.message,
 	});
 });
+
+router.options("*", (req, res) => res.json({ status: "OK" }));
 
 /** Server */
 const httpServer = http.createServer(router);

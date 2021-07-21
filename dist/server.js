@@ -11,6 +11,7 @@ const morgan_1 = __importDefault(require("morgan"));
 const user_1 = __importDefault(require("./routes/user"));
 const game_1 = __importDefault(require("./routes/game"));
 const comparison_1 = __importDefault(require("./routes/comparison"));
+const elo_1 = __importDefault(require("./routes/elo"));
 const router = express_1.default();
 /** Logging */
 router.use(morgan_1.default("dev"));
@@ -26,7 +27,6 @@ router.use((req, res, next) => {
     res.header("Access-Control-Allow-Headers", "origin, X-Requested-With,Content-Type,Accept, Authorization");
     // set the CORS method headers
     if (req.method === "OPTIONS") {
-        res.header("Access-Control-Allow-Methods", "GET PATCH DELETE POST");
         return res.status(200).json({});
     }
     next();
@@ -35,6 +35,7 @@ router.use((req, res, next) => {
 router.use("/user", user_1.default);
 router.use("/game", game_1.default);
 router.use("/comparison", comparison_1.default);
+router.use("/elo", elo_1.default);
 /** Error handling */
 router.use((req, res, next) => {
     const error = new Error("not found");
@@ -42,6 +43,7 @@ router.use((req, res, next) => {
         message: error.message,
     });
 });
+router.options("*", (req, res) => res.json({ status: "OK" }));
 /** Server */
 const httpServer = http_1.default.createServer(router);
 const PORT = (_a = process.env.PORT) !== null && _a !== void 0 ? _a : 6060;

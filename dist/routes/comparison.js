@@ -7,4 +7,6 @@ const comparison_1 = __importDefault(require("../controllers/comparison"));
 const router = express_1.default.Router();
 router.post("/", comparison_1.default.postComparisons);
 router.get("/", comparison_1.default.getAll);
+router.get("/:id", comparison_1.default.getID);
+router.options("*", (req, res) => res.json({ status: "OK" }));
 module.exports = router;

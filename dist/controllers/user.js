@@ -65,10 +65,36 @@ const getUserPlays = async (req, res, next) => {
         post = result;
     });
     let output = post;
+    try {
+        var total = Number(output["plays"].$.total);
+    }
+    catch (TypeError) {
+        return res.status(404).json({ message: "404: User not found" });
+    }
+    const numberOfSearches = Math.floor(total / 100) + 1;
+    const fullListOfGames = [];
+    for (let i = 0; i < numberOfSearches; i++) {
+        const page = i + 1;
+        let result = await axios_1.default.get(`https://api.geekdo.com/xmlapi2/plays?username=${id}&page=${page}`, {
+            headers: {
+                Accept: "application/json",
+            },
+        });
+        let postR = {};
+        //console.log(result.data);
+        xml2js_1.parseString(result.data, (err, result) => {
+            if (err) {
+                throw err;
+            }
+            postR = result;
+        });
+        let output = postR;
+        output.plays.play.map((e) => fullListOfGames.push(e));
+    }
     let games = [];
     try {
-        let temp = output["plays"]["play"].map((e) => {
-            let game = e["item"][0]["$"]["objectid"];
+        let temp = fullListOfGames.map((e) => {
+            let game = e.item[0]["$"]["objectid"];
             if (games.includes(game) === false) {
                 games.push(game);
             }
@@ -77,6 +103,7 @@ const getUserPlays = async (req, res, next) => {
     catch (TypeError) {
         return res.status(404).json({ message: "404: User not found" });
     }
+    console.log(games.length);
     return res.status(200).json({
         message: games,
     });
