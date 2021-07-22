@@ -4,7 +4,6 @@ import Header from "./components/Header";
 import Inputs from "./components/Inputs";
 import { useState } from "react";
 import Game from "./components/Game";
-import { useEffect } from "react";
 import axios, { AxiosResponse } from "axios";
 import EloRank from "elo-rank";
 
