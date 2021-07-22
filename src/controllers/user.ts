@@ -92,8 +92,6 @@ const getUserID = async (req: Request, res: Response, next: NextFunction) => {
 	);
 
 	let post: any = {};
-
-	//console.log(result.data);
 	parseString(result.data, (err: Error, result: Object) => {
 		if (err) {
 			throw err;
@@ -135,7 +133,6 @@ const getUserPlays = async (
 
 	let post: any = {};
 
-	//console.log(result.data);
 	parseString(result.data, (err: Error, result: Object) => {
 		if (err) {
 			throw err;
@@ -154,10 +151,10 @@ const getUserPlays = async (
 
 	const numberOfSearches: number = Math.floor(total / 100) + 1;
 
-	const fullListOfGames: PlayElement[] = [] as PlayElement[];
+	const iterations: number[] = [...Array(numberOfSearches).keys()];
 
-	for (let i = 0; i < numberOfSearches; i++) {
-		const page: number = i + 1;
+	const map: Promise<PlayElement[]>[] = iterations.map(async (e: number) => {
+		const page: number = e + 1;
 		let result: AxiosResponse = await axios.get(
 			`https://api.geekdo.com/xmlapi2/plays?username=${id}&page=${page}`,
 			{
@@ -169,7 +166,6 @@ const getUserPlays = async (
 
 		let postR: any = {};
 
-		//console.log(result.data);
 		parseString(result.data, (err: Error, result: Object) => {
 			if (err) {
 				throw err;
@@ -179,23 +175,24 @@ const getUserPlays = async (
 		});
 
 		let output: Plays = postR;
-		output.plays.play.map((e) => fullListOfGames.push(e));
-	}
+		return output.plays.play;
+	});
 
+	const fullListOfGames: PlayElement[][] = await Promise.all(map);
 	let games: string[] = [];
 
 	try {
-		let temp: any = fullListOfGames.map((e: any) => {
-			let game: string = e.item[0]["$"]["objectid"];
-			if (games.includes(game) === false) {
-				games.push(game);
+		for (var i = 0; i < fullListOfGames.length; i++) {
+			for (var e = 0; e < fullListOfGames[i].length; e++) {
+				let game: string = fullListOfGames[i][e].item[0]["$"]["objectid"];
+				if (games.includes(game) === false) {
+					games.push(game);
+				}
 			}
-		});
+		}
 	} catch (TypeError) {
 		return res.status(404).json({ message: "404: User not found" });
 	}
-
-	console.log(games.length);
 
 	return res.status(200).json({
 		message: games,

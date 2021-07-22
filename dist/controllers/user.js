@@ -28,7 +28,6 @@ const getUserID = async (req, res, next) => {
         },
     });
     let post = {};
-    //console.log(result.data);
     xml2js_1.parseString(result.data, (err, result) => {
         if (err) {
             throw err;
@@ -57,7 +56,6 @@ const getUserPlays = async (req, res, next) => {
         },
     });
     let post = {};
-    //console.log(result.data);
     xml2js_1.parseString(result.data, (err, result) => {
         if (err) {
             throw err;
@@ -72,16 +70,15 @@ const getUserPlays = async (req, res, next) => {
         return res.status(404).json({ message: "404: User not found" });
     }
     const numberOfSearches = Math.floor(total / 100) + 1;
-    const fullListOfGames = [];
-    for (let i = 0; i < numberOfSearches; i++) {
-        const page = i + 1;
+    const iterations = [...Array(numberOfSearches).keys()];
+    const map = iterations.map(async (e) => {
+        const page = e + 1;
         let result = await axios_1.default.get(`https://api.geekdo.com/xmlapi2/plays?username=${id}&page=${page}`, {
             headers: {
                 Accept: "application/json",
             },
         });
         let postR = {};
-        //console.log(result.data);
         xml2js_1.parseString(result.data, (err, result) => {
             if (err) {
                 throw err;
@@ -89,21 +86,23 @@ const getUserPlays = async (req, res, next) => {
             postR = result;
         });
         let output = postR;
-        output.plays.play.map((e) => fullListOfGames.push(e));
-    }
+        return output.plays.play;
+    });
+    const fullListOfGames = await Promise.all(map);
     let games = [];
     try {
-        let temp = fullListOfGames.map((e) => {
-            let game = e.item[0]["$"]["objectid"];
-            if (games.includes(game) === false) {
-                games.push(game);
+        for (var i = 0; i < fullListOfGames.length; i++) {
+            for (var e = 0; e < fullListOfGames[i].length; e++) {
+                let game = fullListOfGames[i][e].item[0]["$"]["objectid"];
+                if (games.includes(game) === false) {
+                    games.push(game);
+                }
             }
-        });
+        }
     }
     catch (TypeError) {
         return res.status(404).json({ message: "404: User not found" });
     }
-    console.log(games.length);
     return res.status(200).json({
         message: games,
     });
