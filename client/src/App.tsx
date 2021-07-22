@@ -80,14 +80,15 @@ function App() {
 	const [games, setGames] = useState<Games | null>(null);
 
 	const handleChangedUser = async (userI: string) => {
-		//const rest: Response = await fetch(`http://localhost:6060/user/${user}`);
+		//const rest: Response = await fetch(`http://localhost:8080/user/${user}`);
 
 		const rest: AxiosResponse = await axios.get(
-			`http://localhost:6060/user/${userI}`,
+			`http://localhost:8080/user/${userI}`,
 			{ validateStatus: (status: number) => status === 404 || status === 200 }
 		);
 
 		const data: GetUserID = await rest.data;
+		console.log(data);
 		if (Number(rest.status) === 200 || Number(rest.status) === 304) {
 			setUserValid(true);
 			setUser(userI);
@@ -101,10 +102,10 @@ function App() {
 
 	const handleChoice = async (winners: Choice) => {
 		const getGameA: AxiosResponse = await axios.get(
-			`http://localhost:6060/elo/${games?.gameA.id}`
+			`http://localhost:8080/elo/${games?.gameA.id}`
 		);
 		const getGameB: AxiosResponse = await axios.get(
-			`http://localhost:6060/elo/${games?.gameB.id}`
+			`http://localhost:8080/elo/${games?.gameB.id}`
 		);
 
 		if (getGameA.data.length === 0) {
@@ -113,7 +114,7 @@ function App() {
 				ComplexElo: 1000,
 				DepthElo: 1000,
 			};
-			await axios.post("http://localhost:6060/elo/", {
+			await axios.post("http://localhost:8080/elo/", {
 				body: newGame,
 			});
 		}
@@ -123,7 +124,7 @@ function App() {
 				ComplexElo: 1000,
 				DepthElo: 1000,
 			};
-			await axios.post("http://localhost:6060/elo/", {
+			await axios.post("http://localhost:8080/elo/", {
 				body: newGame,
 			});
 		}
@@ -136,7 +137,7 @@ function App() {
 			userID: userID,
 		};
 
-		await axios.post("http://localhost:6060/comparison/", {
+		await axios.post("http://localhost:8080/comparison/", {
 			body: data,
 			header: {
 				"Content-Type": "application/json",
@@ -146,10 +147,10 @@ function App() {
 
 		// retrive ELOS and save
 		const getGameAElo: AxiosResponse = await axios.get(
-			`http://localhost:6060/elo/${games?.gameA.id}`
+			`http://localhost:8080/elo/${games?.gameA.id}`
 		);
 		const getGameBElo: AxiosResponse = await axios.get(
-			`http://localhost:6060/elo/${games?.gameB.id}`
+			`http://localhost:8080/elo/${games?.gameB.id}`
 		);
 
 		// function to fetch two more games
@@ -189,11 +190,11 @@ function App() {
 			ComplexElo: complexNewElo.gameB,
 		};
 
-		await axios.post("http://localhost:6060/elo/update", {
+		await axios.post("http://localhost:8080/elo/update", {
 			body: newGameA,
 		});
 
-		await axios.post("http://localhost:6060/elo/update", {
+		await axios.post("http://localhost:8080/elo/update", {
 			body: newGameB,
 		});
 
@@ -201,9 +202,9 @@ function App() {
 	};
 
 	const fetchGameData = async (gameA: number, gameB: number) => {
-		const restA: Response = await fetch(`http://localhost:6060/game/${gameA}`);
+		const restA: Response = await fetch(`http://localhost:8080/game/${gameA}`);
 		const dataA: GameRes = await restA.json();
-		const restB: Response = await fetch(`http://localhost:6060/game/${gameB}`);
+		const restB: Response = await fetch(`http://localhost:8080/game/${gameB}`);
 		const dataB: GameRes = await restB.json();
 
 		const data: Games = { gameA: dataA.message, gameB: dataB.message };
@@ -213,7 +214,7 @@ function App() {
 
 	const generateNewGames = async (userI: string) => {
 		const rest: AxiosResponse = await axios.get(
-			`http://localhost:6060/user/games/${userI}`,
+			`http://localhost:8080/user/games/${userI}`,
 			{ validateStatus: (status: number) => status === 404 || status === 200 }
 		);
 
@@ -234,7 +235,7 @@ function App() {
 			const results: any[] = shuffle(preShuffle);
 
 			const comparisons: AxiosResponse = await axios.get(
-				`http://localhost:6060/comparison/${userID}`
+				`http://localhost:8080/comparison/${userID}`
 			);
 
 			const combos: number[][] = comparisons.data.map((e: PostWinner) => [
@@ -259,8 +260,6 @@ function App() {
 			}
 		}
 	};
-
-	useEffect(() => {}, []);
 
 	return (
 		<main className="div">

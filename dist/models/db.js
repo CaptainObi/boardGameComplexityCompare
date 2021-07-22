@@ -4,14 +4,20 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const mysql_1 = __importDefault(require("mysql"));
-const config_1 = __importDefault(require("../config/config"));
+var mysqlHost = process.env.MYSQL_HOST || "localhost";
+var mysqlPort = Number(process.env.MYSQL_PORT) || 3306;
+var mysqlUser = process.env.MYSQL_USER || "root";
+var mysqlPass = process.env.MYSQL_PASS || "root";
+var mysqlDB = process.env.MYSQL_DB || "node_db";
+console.log(mysqlHost);
 // Create a connection to the database
 const connection = mysql_1.default.createConnection({
-    host: config_1.default.HOST,
-    user: config_1.default.USER,
-    password: config_1.default.PASSWORD,
-    database: config_1.default.DB,
-    port: 3306,
+    host: mysqlHost,
+    user: mysqlUser,
+    password: mysqlPass,
+    database: mysqlDB,
+    port: mysqlPort,
+    connectTimeout: 30000,
 });
 // open the MySQL connection
 connection.connect((error) => {

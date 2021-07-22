@@ -1,13 +1,21 @@
 import mysql from "mysql";
-import config from "../config/config";
+
+var mysqlHost = process.env.MYSQL_HOST || "localhost";
+var mysqlPort = Number(process.env.MYSQL_PORT) || 3306;
+var mysqlUser = process.env.MYSQL_USER || "root";
+var mysqlPass = process.env.MYSQL_PASS || "root";
+var mysqlDB = process.env.MYSQL_DB || "node_db";
+
+console.log(mysqlHost);
 
 // Create a connection to the database
 const connection = mysql.createConnection({
-	host: config.HOST,
-	user: config.USER,
-	password: config.PASSWORD,
-	database: config.DB,
-	port: 3306,
+	host: mysqlHost,
+	user: mysqlUser,
+	password: mysqlPass,
+	database: mysqlDB,
+	port: mysqlPort,
+	connectTimeout: 30000,
 });
 
 // open the MySQL connection
