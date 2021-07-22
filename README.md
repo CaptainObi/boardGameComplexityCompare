@@ -15,15 +15,14 @@ expressbackend: 8080
 
 If you plan on doing alot of devolopment I recomend you run the code differently.
 
-Install the relevant modules
+Install the relevant modules  
 `npm i`  
-Repeat the process for the front end
+Repeat the process for the front end  
 `cd client`  
 `npm i`  
-Start the front end
+Start the front end  
 `npm run start`  
-
-Open a new window
+Open a new window  
 `npm run dev`  
 
 You then want a mysql instace running with two databases with the schemas of `games` and `compare`. Adjust the settings to connect to the db at /src/models/db.ts
