@@ -6,6 +6,7 @@ import userRoutes from "./routes/user";
 import gameRoutes from "./routes/game";
 import comparisonRoutes from "./routes/comparison";
 import eloRoutes from "./routes/elo";
+import { resolve } from "path";
 const router: Express = express();
 
 /** Logging */
@@ -32,10 +33,10 @@ router.use((req, res, next) => {
 });
 
 /** Routes */
-router.use("/user", userRoutes);
-router.use("/game", gameRoutes);
-router.use("/comparison", comparisonRoutes);
-router.use("/elo", eloRoutes);
+router.use("/api/user", userRoutes);
+router.use("/api/game", gameRoutes);
+router.use("/api/comparison", comparisonRoutes);
+router.use("/api/elo", eloRoutes);
 /** Error handling */
 router.use((req, res, next) => {
 	const error = new Error("not found");
@@ -53,3 +54,7 @@ const PORT: any = process.env.PORT || 6060;
 httpServer.listen(PORT, () =>
 	console.log(`The server is running on port ${PORT}`)
 );
+
+router.get("*", (req, res) => {
+	res.sendFile(resolve(__dirname, "../client/build", "index.html"));
+});

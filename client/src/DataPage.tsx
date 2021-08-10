@@ -45,13 +45,13 @@ function DataPage() {
 
 	useEffect(() => {
 		const getRows = async () => {
-			const res: AxiosResponse = await axios.get("http://localhost:6060/elo/");
+			const res: AxiosResponse = await axios.get("/api/elo/");
 			const data: Elo[] = await res.data;
 
 			const axiosRequests = [];
 			const ids: number[] = data.map((e: Elo) => e.gameID);
 			for (let id of ids) {
-				axiosRequests.push(axios.get(`http://localhost:6060/game/${id}`));
+				axiosRequests.push(axios.get(`/api/game/${id}`));
 			}
 
 			let responseArray: AxiosResponse[];
@@ -89,7 +89,7 @@ function DataPage() {
 			
 			const newData: object[] = data.map(async (e: Elo) => {
 				const res: Response = await fetch(
-					`http://localhost:6060/game/${e.gameID}`
+					`/api/game/${e.gameID}`
 				);
 				const data: GameRes = await res.json();
 				const name: string = data.message.name;
