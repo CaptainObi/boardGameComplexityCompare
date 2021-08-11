@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { Comparison } from "../models/index";
 
 interface ComparisonInterface {
-	GameA: number;
-	GameB: number;
+	gameA: number;
+	gameB: number;
 	WinnerMechanically: number;
 	WinnerDepth: number;
 	user: number;
@@ -27,8 +27,8 @@ const postComparisons = async (
 
 	// Create a Customer
 	const newComparison: ComparisonInterface = {
-		GameA: reqBody.body.gameA,
-		GameB: reqBody.body.gameB,
+		gameA: reqBody.body.gameA,
+		gameB: reqBody.body.gameB,
 		WinnerMechanically: reqBody.body.winnerMechanically,
 		WinnerDepth: reqBody.body.winnerDepth,
 		user: reqBody.body.userID,
