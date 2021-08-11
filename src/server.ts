@@ -45,7 +45,7 @@ router.use("/api/user", userRoutes);
 router.use("/api/game", gameRoutes);
 router.use("/api/comparison", comparisonRoutes);
 router.use("/api/elo", eloRoutes);
-router.get("{0,}", (req, res) => {
+router.get("/{0,}", (req, res) => {
 	res.sendFile(path.join(__dirname, "client/build/index.html"));
 });
 /** Error handling */
