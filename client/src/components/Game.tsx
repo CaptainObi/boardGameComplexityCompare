@@ -5,11 +5,16 @@ import "../App.css";
 type GameProps = {
 	game: GameElement;
 	align: string;
+	onBtnClick: (winner: number) => void;
 };
 
-function Game({ game, align }: GameProps) {
+function Game({ game, align, onBtnClick }: GameProps) {
 	return (
-		<div className={align}>
+		<div
+			className={align}
+			style={{ backgroundColor: "gray" }}
+			onClick={() => onBtnClick(Number(game.id))}
+		>
 			<h1>{game.name}</h1>
 			<p>({game.yearpublished})</p>
 			<div className="image">

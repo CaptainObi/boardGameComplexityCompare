@@ -83,8 +83,7 @@ function App() {
 	const [userValid, setUserValid] = useState(false);
 	const [games, setGames] = useState<Games | null>(null);
 	const [question, setQuestion] = useState<Question>(Question.Mechanically);
-	const [depth, setDepth] = useState("");
-	const [mechanically, setMechanically] = useState("");
+	const [mechanically, setMechanically] = useState(0);
 
 	const handleChangedUser = async (userI: string) => {
 		//const rest: Response = await fetch(`/api/user/${user}`);
@@ -106,13 +105,15 @@ function App() {
 		}
 	};
 
-	const handleClick = async (winner: string) => {
+	const handleClick = async (winner: number) => {
 		if (question === Question.Mechanically) {
 			setMechanically(winner);
 			setQuestion(Question.Depth);
+			console.log("now going to depth");
 		} else {
-			setDepth(winner);
-			setQuestion(Question.Depth);
+			handleChoice({ winnerDepth: winner, winnerMechanically: mechanically });
+			setQuestion(Question.Mechanically);
+			console.log("now going to mech");
 		}
 	};
 
@@ -302,8 +303,27 @@ function App() {
 				game={games}
 				onChoice={handleChoice}
 			/>
-			{games !== null && <Game key="left" game={games.gameA} align="gameL" />}
-			{games !== null && <Game key="right" game={games.gameB} align="gameR" />}
+			<h2 className="question">
+				{question === Question.Mechanically
+					? "Which game is more mechanically complex?"
+					: "Which game has more depth?"}
+			</h2>
+			{games !== null && (
+				<Game
+					key="left"
+					onBtnClick={handleClick}
+					game={games.gameA}
+					align="gameL"
+				/>
+			)}
+			{games !== null && (
+				<Game
+					key="right"
+					onBtnClick={handleClick}
+					game={games.gameB}
+					align="gameR"
+				/>
+			)}
 		</main>
 	);
 }

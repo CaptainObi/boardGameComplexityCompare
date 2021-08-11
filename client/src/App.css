@@ -6,12 +6,13 @@
 	grid-template-areas:
 		"topbar topbar"
 		"buttons buttons"
+		"question question"
 		"gameL gameR"
 		"footer footer";
 
 	grid-template-columns: 3fr 3fr;
 
-	grid-template-rows: 70px auto auto 70px;
+	grid-template-rows: 70px auto auto auto 70px;
 
 	align-items: center;
 	justify-items: center;
@@ -21,22 +22,36 @@
 
 .gameL {
 	grid-area: gameL;
-	width: 100%;
-	height: 100%;
+	width: 90%;
+	height: 90%;
 	align-items: center;
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
+	margin: 5%;
 }
 
 .gameR {
 	grid-area: gameR;
-	width: 100%;
-	height: 100%;
+	width: 90%;
+	height: 90%;
 	align-items: center;
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
+	margin: 5%;
+}
+
+.question {
+	grid-area: question;
+}
+
+.gameL:active {
+	transform: scale(0.98);
+}
+
+.gameR:active {
+	transform: scale(0.98);
 }
 
 .buttons {
