@@ -6,8 +6,8 @@ import userRoutes from "./routes/user";
 import gameRoutes from "./routes/game";
 import comparisonRoutes from "./routes/comparison";
 import eloRoutes from "./routes/elo";
-import { resolve } from "path";
 const router: Express = express();
+import { join } from "path";
 
 /** Logging */
 router.use(morgan("dev"));
@@ -15,6 +15,12 @@ router.use(morgan("dev"));
 router.use(express.urlencoded({ extended: false }));
 /** Takes care of JSON data */
 router.use(express.json());
+
+if (process.env.NODE_ENV === "production") {
+	//server static content
+	//npm run build
+	router.use(express.static(join(__dirname, "client/build")));
+}
 
 /** RULES OF OUR API */
 router.use((req, res, next) => {
@@ -56,5 +62,5 @@ httpServer.listen(PORT, () =>
 );
 
 router.get("*", (req, res) => {
-	res.sendFile(resolve(__dirname, "../client/build", "index.html"));
+	res.sendFile(join(__dirname, "client/build/index.html"));
 });

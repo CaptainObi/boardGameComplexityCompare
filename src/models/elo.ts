@@ -10,20 +10,24 @@ interface Elo {
 
 const create = (game: Elo, result: Function) => {
 	console.log(game);
-	connection.query("INSERT INTO games SET ?", game, (err, res) => {
-		if (err) {
-			console.log("error: ", err);
-			result(err, null);
-			return;
-		}
+	connection.query(
+		"INSERT INTO games VALUES ($1) RETURNING *",
+		[game],
+		(err, res) => {
+			if (err) {
+				console.log("error: ", err);
+				result(err, null);
+				return;
+			}
 
-		result(null, { id: res.insertId, ...game });
-	});
+			result(null, res);
+		}
+	);
 };
 
 const update = (game: Elo, result: Function) => {
 	connection.query(
-		"UPDATE games SET ? WHERE gameID=?",
+		"UPDATE games SET $1 WHERE gameID=$2",
 		[game, game.gameID],
 		(err, res) => {
 			if (err) {
@@ -32,13 +36,13 @@ const update = (game: Elo, result: Function) => {
 				return;
 			}
 
-			result(null, { id: res.insertId, ...game });
+			result(null, res);
 		}
 	);
 };
 
 const getAll = (result: Function) => {
-	connection.query("SELECT * FROM games", (err: Error, res: Response) => {
+	connection.query("SELECT * FROM games", [], (err, res) => {
 		if (err) {
 			console.log("error: ", err);
 			result(null, err);
@@ -50,7 +54,7 @@ const getAll = (result: Function) => {
 };
 
 const getID = (id: number, result: Function) => {
-	connection.query("SELECT * FROM games WHERE gameID=?", id, (err, res) => {
+	connection.query("SELECT * FROM games WHERE gameID=$1", [id], (err, res) => {
 		if (err) {
 			console.log("error: ", err);
 			result(null, err);

@@ -15,43 +15,28 @@ services:
       - backend
       - frontend
     environment:
-      - MYSQL_HOST=moe-mysql-app
-      - MYSQL_USER=moeuser
-      - MYSQL_PASS=moepass
-      - MYSQL_DB=moe_db
+      - POSTGRES_DB=boardgamecomplexitycompare
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_HOST=db
     volumes:
       - ./www/:/var/www/html/
+    depends_on:
+      - db
     ports:
       - "8080:6060"
     links:
-      - mysqld
+      - db
     container_name: nodejsBE
-  mysqld:
-    image: mysql:5.7
+  db:
+    image: postgres:12
     networks:
       - backend
     environment:
-      - MYSQL_ROOT_PASSWORD=root
-      - MYSQL_USER=moeuser
-      - MYSQL_PASSWORD=moepass
-      - MYSQL_DATABASE=moe_db
-    container_name: moe-mysql-app
-  phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    depends_on:
-      - mysqld
-    links:
-      - mysqld
-    networks:
-      - backend
-    ports:
-      - "30002:80"
-    environment:
-      - PMA_HOST=moe-mysql-app
-      - PMA_PORT= 3306
-    volumes:
-      - /sessions
-    container_name: moe-phpmyadmin-app
+      - POSTGRES_DB=boardgamecomplexitycompare
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    container_name: postgres_sql
 networks:
   frontend:
   backend:

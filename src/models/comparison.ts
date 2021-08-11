@@ -11,20 +11,24 @@ interface Comparison {
 // constructor
 
 const create = (comparison: Comparison, result: Function) => {
-	connection.query("INSERT INTO compare SET ?", comparison, (err, res) => {
-		if (err) {
-			console.log("error: ", err);
-			result(err, null);
-			return;
-		}
+	connection.query(
+		"INSERT INTO compare VALUES ($1) RETURNNING *",
+		[comparison],
+		(err, res) => {
+			if (err) {
+				console.log("error: ", err);
+				result(err, null);
+				return;
+			}
 
-		console.log("created customer: ", { id: res.insertId, ...comparison });
-		result(null, { id: res.insertId, ...comparison });
-	});
+			console.log("created customer: ", res);
+			result(null, res);
+		}
+	);
 };
 
 const getAll = (result: Function) => {
-	connection.query("SELECT * FROM compare", (err: Error, res: Response) => {
+	connection.query("SELECT * FROM compare", [], (err, res) => {
 		if (err) {
 			console.log("error: ", err);
 			result(null, err);
@@ -37,7 +41,7 @@ const getAll = (result: Function) => {
 };
 
 const getID = (id: number, result: Function) => {
-	connection.query("SELECT * FROM compare WHERE user=?", id, (err, res) => {
+	connection.query("SELECT * FROM compare WHERE user=$1", [id], (err, res) => {
 		if (err) {
 			console.log("error: ", err);
 			result(null, err);

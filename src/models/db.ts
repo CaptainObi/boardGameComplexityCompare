@@ -1,27 +1,12 @@
-import mysql from "mysql";
+import { Pool } from "pg";
 
-var mysqlHost = process.env.MYSQL_HOST || "localhost";
-var mysqlPort = Number(process.env.MYSQL_PORT) || 3306;
-var mysqlUser = process.env.MYSQL_USER || "root";
-var mysqlPass = process.env.MYSQL_PASS || "root";
-var mysqlDB = process.env.MYSQL_DB || "node_db";
+const devConfig = `postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}`;
 
-console.log(mysqlHost);
-
+const proConfig = process.env.DATABASE_URL; //heroku addons
 // Create a connection to the database
-const connection = mysql.createConnection({
-	host: mysqlHost,
-	user: mysqlUser,
-	password: mysqlPass,
-	database: mysqlDB,
-	port: mysqlPort,
-	connectTimeout: 30000,
-});
-
-// open the MySQL connection
-connection.connect((error) => {
-	if (error) throw error;
-	console.log("Successfully connected to the database.");
+const connection = new Pool({
+	connectionString:
+		process.env.NODE_ENV === "production" ? proConfig : devConfig,
 });
 
 export default connection;
