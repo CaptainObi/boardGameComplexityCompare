@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from "express";
-import elo from "../models/elo";
+import { Game } from "../models/index";
 
 interface Elo {
 	gameID: number;
@@ -28,14 +28,8 @@ const postElo = async (req: Request, res: Response, next: NextFunction) => {
 		};
 
 		// Save Customer in the database
-		elo.create(newGame, (err: Error, data: Response) => {
-			if (err)
-				res.status(500).send({
-					message:
-						err.message || "Some error occurred while creating the comparison.",
-				});
-			else res.send(data);
-		});
+		const response = await Game.create(newGame);
+		res.send(response);
 	} catch (err) {
 		res.status(500).send({ message: err.message || "Some error occured" });
 	}
@@ -58,42 +52,27 @@ const updateElo = async (req: Request, res: Response, next: NextFunction) => {
 	};
 
 	// Save Customer in the database
-	elo.update(newGame, (err: Error, data: Response) => {
-		if (err)
-			res.status(500).send({
-				message:
-					err.message || "Some error occurred while creating the comparison.",
-			});
-		else res.send(data);
+	const response = await Game.update(newGame, {
+		returning: true,
+		where: { gameID: newGame.gameID },
 	});
+	res.send(response);
 };
 
 const getAll = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
 
 	// Save Customer in the database
-	elo.getAll((err: Error, data: Response) => {
-		if (err)
-			res.status(500).send({
-				message:
-					err.message || "Some error occurred while creating the comparison.",
-			});
-		else res.send(data);
-	});
+	const response = await Game.findAll();
+	res.send(response);
 };
 
 const getID = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
 	let id: string = req.params.id;
 	// Save Customer in the database
-	elo.getID(Number(id), (err: Error, data: Response) => {
-		if (err)
-			res.status(500).send({
-				message:
-					err.message || "Some error occurred while creating the comparison.",
-			});
-		else res.send(data);
-	});
+	const response = await Game.findByPk(id);
+	res.send(response);
 };
 
 export default { postElo, getAll, getID, updateElo };

@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
-import comparison from "../models/comparison";
+import { Comparison } from "../models/index";
 
-interface Comparison {
+interface ComparisonInterface {
 	GameA: number;
 	GameB: number;
 	WinnerMechanically: number;
@@ -26,7 +26,7 @@ const postComparisons = async (
 	}
 
 	// Create a Customer
-	const newComparison: Comparison = {
+	const newComparison: ComparisonInterface = {
 		GameA: reqBody.body.gameA,
 		GameB: reqBody.body.gameB,
 		WinnerMechanically: reqBody.body.winnerMechanically,
@@ -35,42 +35,24 @@ const postComparisons = async (
 	};
 
 	// Save Customer in the database
-	comparison.create(newComparison, (err: Error, data: Response) => {
-		if (err)
-			res.status(500).send({
-				message:
-					err.message || "Some error occurred while creating the comparison.",
-			});
-		else res.send(data);
-	});
+	const response = await Comparison.create(newComparison);
+	res.send(response);
 };
 
 const getAll = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
 
 	// Save Customer in the database
-	comparison.getAll((err: Error, data: Response) => {
-		if (err)
-			res.status(500).send({
-				message:
-					err.message || "Some error occurred while creating the comparison.",
-			});
-		else res.send(data);
-	});
+	const response = await Comparison.findAll();
+	res.send(response);
 };
 
 const getID = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
 	let id: string = req.params.id;
 	// Save Customer in the database
-	comparison.getID(Number(id), (err: Error, data: Response) => {
-		if (err)
-			res.status(500).send({
-				message:
-					err.message || "Some error occurred while creating the comparison.",
-			});
-		else res.send(data);
-	});
+	const response = await Comparison.findByPk(id);
+	res.send(response);
 };
 
 export default { postComparisons, getAll, getID };
