@@ -47,6 +47,7 @@ router.use("/api/comparison", comparisonRoutes);
 router.use("/api/elo", eloRoutes);
 /** Error handling */
 router.use((req, res, next) => {
+	console.log("elllo");
 	res.sendFile(path.join(__dirname, "client/build/index.html"));
 });
 
