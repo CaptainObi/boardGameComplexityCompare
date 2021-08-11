@@ -6,6 +6,7 @@ import { useState } from "react";
 import Game from "./components/Game";
 import axios, { AxiosResponse } from "axios";
 import EloRank from "elo-rank";
+import { createPartiallyEmittedExpression } from "typescript";
 
 const elo = new EloRank(24);
 
@@ -176,6 +177,8 @@ function App() {
 
 		const complexNewElo = computeNewElo(gameA.ComplexElo, gameB.ComplexElo);
 		const depthNewElo = computeNewElo(gameA.DepthElo, gameB.DepthElo);
+
+		console.log(complexNewElo, depthNewElo);
 
 		const newGameA: Elo = {
 			gameID: gameA.gameID,
