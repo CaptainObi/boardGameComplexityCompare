@@ -6,7 +6,7 @@
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1",
 		"build": "tsc",
-		"heroku-postbuild": "cd client && npm install && npm run build",
+		"heroku-postbuild": "tsc && cd client && npm install && npm run build",
 		"start": "node dist/server.js",
 		"dev": "concurrently -k -n COMPILER,NODEMON -c gray,blue \"tsc -w\" \"nodemon -w dist dist/server.js\""
 	},
