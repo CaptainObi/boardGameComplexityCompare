@@ -237,10 +237,11 @@ function App() {
 
 			console.log(comparisons);
 
-			const combos: number[][] = comparisons.data.map((e: PostWinner) => [
-				e.gameA,
-				e.gameB,
-			]);
+			let combos: number[][] = [[]];
+
+			if (!(comparisons.data === "")) {
+				combos = comparisons.data.map((e: PostWinner) => [e.gameA, e.gameB]);
+			}
 
 			for (let i in results) {
 				console.log(combos, results[i], "hello");

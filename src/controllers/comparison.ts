@@ -51,7 +51,7 @@ const getID = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
 	let id: string = req.params.id;
 	// Save Customer in the database
-	const response = await Comparison.findByPk(id);
+	const response = await Comparison.findAll({ where: { user: id } });
 	res.send(response);
 };
 
