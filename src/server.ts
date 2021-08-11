@@ -19,8 +19,8 @@ router.use(express.json());
 if (process.env.NODE_ENV === "production") {
 	//server static content
 	//npm run build
-	router.use(express.static(path.join(__dirname, "client/build")));
-	console.log(path.join(__dirname, "client/build"));
+	router.use(express.static("/app/client/build"));
+	console.log("/app/client/build");
 	console.log("ello");
 }
 
@@ -48,7 +48,7 @@ router.use("/api/elo", eloRoutes);
 /** Error handling */
 router.use((req, res, next) => {
 	console.log("elllo");
-	res.sendFile(path.join(__dirname, "client/build/index.html"));
+	res.sendFile("/app/client/build/index.html");
 });
 
 router.options("*", (req, res) => res.json({ status: "OK" }));

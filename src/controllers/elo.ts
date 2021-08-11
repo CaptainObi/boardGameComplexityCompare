@@ -9,31 +9,36 @@ interface Elo {
 
 const postElo = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
+	try {
+		const reqBody: any = req.body;
 
-	const reqBody: any = req.body;
-
-	if (!req.body) {
-		res.status(400).send({
-			message: "Content can not be empty!",
-		});
-	}
-
-	// Create a Customer
-	const newGame: Elo = {
-		gameID: reqBody.body.gameID,
-		ComplexElo: reqBody.body.ComplexElo,
-		DepthElo: reqBody.body.DepthElo,
-	};
-
-	// Save Customer in the database
-	elo.create(newGame, (err: Error, data: Response) => {
-		if (err)
-			res.status(500).send({
-				message:
-					err.message || "Some error occurred while creating the comparison.",
+		if (!req.body) {
+			res.status(400).send({
+				message: "Content can not be empty!",
 			});
-		else res.send(data);
-	});
+		}
+
+		console.log(reqBody);
+
+		// Create a Customer
+		const newGame: Elo = {
+			gameID: reqBody.body.gameID,
+			ComplexElo: reqBody.body.ComplexElo,
+			DepthElo: reqBody.body.DepthElo,
+		};
+
+		// Save Customer in the database
+		elo.create(newGame, (err: Error, data: Response) => {
+			if (err)
+				res.status(500).send({
+					message:
+						err.message || "Some error occurred while creating the comparison.",
+				});
+			else res.send(data);
+		});
+	} catch (err) {
+		res.status(500).send({ message: err.message || "Some error occured" });
+	}
 };
 
 const updateElo = async (req: Request, res: Response, next: NextFunction) => {
