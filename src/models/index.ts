@@ -49,7 +49,7 @@ class Comparison extends Model {
 Game.init(
 	{
 		gameID: {
-			type: DataTypes.INTEGER.UNSIGNED,
+			type: DataTypes.INTEGER,
 			autoIncrement: true,
 			primaryKey: true,
 		},
@@ -68,14 +68,14 @@ Game.init(
 Comparison.init(
 	{
 		ID: {
-			type: DataTypes.INTEGER.UNSIGNED,
+			type: DataTypes.INTEGER,
 			autoIncrement: true,
 			primaryKey: true,
 		},
-		gameA: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
-		gameB: { type: DataTypes.INTEGER.UNSIGNED, allowNull: false },
-		WinnerMechanically: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
-		WinnerDepth: { type: DataTypes.INTEGER.UNSIGNED, allowNull: true },
+		gameA: { type: DataTypes.INTEGER, allowNull: false },
+		gameB: { type: DataTypes.INTEGER, allowNull: false },
+		WinnerMechanically: { type: DataTypes.INTEGER, allowNull: true },
+		WinnerDepth: { type: DataTypes.INTEGER, allowNull: true },
 		user: { type: DataTypes.INTEGER, allowNull: false },
 	},
 	{ sequelize, tableName: "compare" }
@@ -89,6 +89,7 @@ Game.hasMany(Comparison, {
 });
 Game.hasMany(Comparison, { sourceKey: "gameID", foreignKey: "WinnerDepth" });
 
+sequelize.sync();
 /*ID SERIAL,
             gameA integer NOT NULL,
             gameB integer NOT NULL,
