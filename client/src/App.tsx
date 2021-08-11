@@ -175,8 +175,16 @@ function App() {
 			return { gameA: newGameA, gameB: newGameB };
 		};
 
-		const complexNewElo = computeNewElo(gameA.ComplexElo, gameB.ComplexElo);
-		const depthNewElo = computeNewElo(gameA.DepthElo, gameB.DepthElo);
+		console.log(gameA.ComplexElo);
+
+		const complexNewElo = computeNewElo(
+			Number(gameA.ComplexElo),
+			Number(gameB.ComplexElo)
+		);
+		const depthNewElo = computeNewElo(
+			Number(gameA.DepthElo),
+			Number(gameB.DepthElo)
+		);
 
 		console.log(complexNewElo, depthNewElo);
 
