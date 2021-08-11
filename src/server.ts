@@ -45,15 +45,9 @@ router.use("/api/user", userRoutes);
 router.use("/api/game", gameRoutes);
 router.use("/api/comparison", comparisonRoutes);
 router.use("/api/elo", eloRoutes);
-router.get("/{0,}", (req, res) => {
-	res.sendFile(path.join(__dirname, "client/build/index.html"));
-});
 /** Error handling */
 router.use((req, res, next) => {
-	const error = new Error("not found");
-	return res.status(404).json({
-		message: error.message,
-	});
+	res.sendFile(path.join(__dirname, "client/build/index.html"));
 });
 
 router.options("*", (req, res) => res.json({ status: "OK" }));
