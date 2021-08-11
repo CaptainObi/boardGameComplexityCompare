@@ -45,6 +45,9 @@ router.use("/api/user", userRoutes);
 router.use("/api/game", gameRoutes);
 router.use("/api/comparison", comparisonRoutes);
 router.use("/api/elo", eloRoutes);
+router.get("*", (req, res) => {
+	res.sendFile(path.join(__dirname, "client/build/index.html"));
+});
 /** Error handling */
 router.use((req, res, next) => {
 	const error = new Error("not found");
@@ -61,11 +64,4 @@ const httpServer = http.createServer(router);
 const PORT: any = process.env.PORT || 6060;
 httpServer.listen(PORT, () =>
 	console.log(`The server is running on port ${PORT}`)
-);
-
-router.use(
-	"*",
-	router.get("*", (req, res) => {
-		res.sendFile(path.join(__dirname, "client/build/index.html"));
-	})
 );
