@@ -20,6 +20,8 @@ if (process.env.NODE_ENV === "production") {
 	//server static content
 	//npm run build
 	router.use(express.static(join(__dirname, "client/build")));
+	console.log(join(__dirname, "client/build"));
+	console.log("ello");
 }
 
 /** RULES OF OUR API */
@@ -61,6 +63,9 @@ httpServer.listen(PORT, () =>
 	console.log(`The server is running on port ${PORT}`)
 );
 
-router.get("*", (req, res) => {
-	res.sendFile(join(__dirname, "client/build/index.html"));
-});
+router.use(
+	"*",
+	router.get("/", (req, res) => {
+		res.sendFile(join(__dirname, "client/build/index.html"));
+	})
+);
