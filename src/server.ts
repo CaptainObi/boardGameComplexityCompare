@@ -45,10 +45,15 @@ router.use("/api/user", userRoutes);
 router.use("/api/game", gameRoutes);
 router.use("/api/comparison", comparisonRoutes);
 router.use("/api/elo", eloRoutes);
+router.use("/", (req, res) => {
+	res.sendFile("/app/client/build/index.html");
+});
 /** Error handling */
 router.use((req, res, next) => {
-	console.log("elllo");
-	res.sendFile("/app/client/build/index.html");
+	const error = new Error("not found");
+	return res.status(404).json({
+		message: error.message,
+	});
 });
 
 router.options("*", (req, res) => res.json({ status: "OK" }));

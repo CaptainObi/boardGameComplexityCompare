@@ -235,6 +235,8 @@ function App() {
 				`/api/comparison/${userID}`
 			);
 
+			console.log(comparisons);
+
 			const combos: number[][] = comparisons.data.map((e: PostWinner) => [
 				e.gameA,
 				e.gameB,
