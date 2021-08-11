@@ -1,3 +1,10 @@
+CREATE TABLE games (
+  gameID SERIAL,
+  ComplexElo INT NOT NULL,
+  DepthElo INT NOT NULL,
+  PRIMARY KEY (gameID)
+);
+
 CREATE TABLE compare (
   ID SERIAL,
   gameA integer NOT NULL,
@@ -7,33 +14,13 @@ CREATE TABLE compare (
   "user" integer NOT NULL
 );
 
---
--- Indexes for dumped tables
---
-
---
--- Indexes for table compare
---
 ALTER TABLE compare
   ADD PRIMARY KEY (ID);
 
---
--- AUTO_INCREMENT for dumped tables
---
-
---
--- AUTO_INCREMENT for table compare
---
 ALTER TABLE compare
   MODIFY ID INT NOT NULL AUTO_INCREMENT;
 
---
--- Constraints for dumped tables
---
 
---
--- Constraints for table compare
---
 ALTER TABLE compare
   ADD CONSTRAINT compare_ibfk_1 FOREIGN KEY (gameA) REFERENCES games (gameID),
   ADD CONSTRAINT compare_ibfk_2 FOREIGN KEY (gameB) REFERENCES games (gameID),
