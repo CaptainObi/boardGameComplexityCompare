@@ -153,6 +153,9 @@ function App() {
 		);
 
 		// function to fetch two more games
+
+		console.log([getGameAElo, getGameBElo]);
+
 		const gameA: Elo = getGameAElo.data[0];
 		const gameB: Elo = getGameBElo.data[0];
 
