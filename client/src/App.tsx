@@ -303,11 +303,13 @@ function App() {
 				game={games}
 				onChoice={handleChoice}
 			/>
-			<h2 className="question">
-				{question === Question.Mechanically
-					? "Which game is more mechanically complex?"
-					: "Which game has more depth?"}
-			</h2>
+			{userValid && (
+				<h2 className="question">
+					{question === Question.Mechanically
+						? "Which game is more mechanically complex?"
+						: "Which game has more depth?"}
+				</h2>
+			)}
 			{games !== null && (
 				<Game
 					key="left"
