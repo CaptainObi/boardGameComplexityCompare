@@ -54,11 +54,11 @@ Game.init(
 			primaryKey: true,
 		},
 		ComplexElo: {
-			type: DataTypes.NUMBER,
+			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
 		DepthElo: {
-			type: DataTypes.NUMBER,
+			type: DataTypes.INTEGER,
 			allowNull: false,
 		},
 	},
