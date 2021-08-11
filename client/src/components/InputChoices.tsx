@@ -55,8 +55,8 @@ function InputChoices({ game, onChoice }: InputChoicesProps) {
 	return (
 		<form className="wpforms-container" onSubmit={onSubmit}>
 			<ul className="wpforms-container">
-				<p>Which game has more depth?</p>
-				<li className="wpforms-container">
+				<p className="wpforms-container-D">Which game has more depth?</p>
+				<li className="wpforms-container-ad">
 					<label
 						className={`wpforms-container${
 							depth === game?.gameA.name ? "-c" : "-l"
@@ -72,7 +72,7 @@ function InputChoices({ game, onChoice }: InputChoicesProps) {
 						{game?.gameA.name}
 					</label>
 				</li>
-				<li className="wpforms-container">
+				<li className="wpforms-container-bd">
 					<label
 						className={`wpforms-container${
 							depth === game?.gameB.name ? "-c" : "-l"
@@ -88,8 +88,10 @@ function InputChoices({ game, onChoice }: InputChoicesProps) {
 						{game?.gameB.name}
 					</label>
 				</li>
-				<p>Which game is harder to learn mechanically?</p>
-				<li className="wpforms-container">
+				<p className="wpforms-container-M">
+					Which game is harder to learn mechanically?
+				</p>
+				<li className="wpforms-container-am">
 					<label
 						className={`wpforms-container${
 							mechanically === game?.gameA.name ? "-c" : "-l"
@@ -105,7 +107,7 @@ function InputChoices({ game, onChoice }: InputChoicesProps) {
 						{game?.gameA.name}
 					</label>
 				</li>
-				<li className="wpforms-container">
+				<li className="wpforms-container-bm">
 					<label
 						className={`wpforms-container${
 							mechanically === game?.gameB.name ? "-c" : "-l"

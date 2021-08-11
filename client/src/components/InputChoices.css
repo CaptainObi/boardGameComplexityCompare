@@ -6,7 +6,7 @@
 .wpforms-container-l {
 	display: inline-block;
 	padding: 5px !important;
-	width: 100%;
+	width: 30ch;
 	box-sizing: border-box;
 	background-color: #979797 !important;
 	transition: all 0.3s ease-in-out !important;
@@ -27,17 +27,69 @@
 	border: 0.5px solid white;
 }
 
-.wpforms-container ul li {
+.wpforms-container-ad {
+	grid-area: gameLD;
+	margin: 5px !important;
+	justify-self: right;
+	height: auto;
+	border-radius: 3px !important;
+	line-height: 1.4em !important;
+}
+.wpforms-container-bd {
+	grid-area: gameRD;
+	justify-self: left;
+	margin: 5px !important;
+	height: auto;
+	border-radius: 3px !important;
+	line-height: 1.4em !important;
+}
+.wpforms-container-am {
+	grid-area: gameLM;
+	justify-self: right;
+	margin: 5px !important;
+	height: auto;
+	border-radius: 3px !important;
+	line-height: 1.4em !important;
+}
+.wpforms-container-bm {
+	grid-area: gameRM;
+	justify-self: left;
+	margin: 5px !important;
+	height: auto;
+	border-radius: 3px !important;
+	line-height: 1.4em !important;
+}
+
+.wpforms-container-D {
+	grid-area: centerOptionsD;
 	margin: 0px !important;
 	height: auto;
 	border-radius: 3px !important;
 	line-height: 1.4em !important;
 }
-.wpforms-container ul {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
+.wpforms-container-M {
+	grid-area: centerOptionsM;
 	margin: 0px !important;
+	height: auto;
+	border-radius: 3px !important;
+	line-height: 1.4em !important;
+}
+
+.wpforms-container ul {
+	margin: 4px;
+	padding: 0;
+	display: grid;
+	grid-template-areas:
+		"gameLD centerOptionsD gameRD"
+		"gameLM centerOptionsM gameRM"
+		"uwu go uwu1";
+
+	grid-template-columns: 3fr 1fr 3fr;
+
+	grid-template-rows: auto, auto, auto;
+
+	align-items: center;
+	justify-items: center;
 	height: auto;
 	border-radius: 3px !important;
 	line-height: 1.4em !important;
@@ -50,8 +102,10 @@
 
 .submit {
 	display: inline-block;
-	padding: 5px !important;
-	width: 100%;
+	margin: 5px !important;
+	grid-area: centerOptions;
+	width: 25ch;
+	grid-area: go;
 	height: auto;
 	box-sizing: border-box;
 	background-image: none !important;

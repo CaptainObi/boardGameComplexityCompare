@@ -1,6 +1,5 @@
 import { Games, Choice } from "../App";
 import "../App.css";
-import InputUser from "./InputUser";
 import "./InputUser.css";
 import InputChoices from "./InputChoices";
 
@@ -21,7 +20,7 @@ function Inputs({
 }: InputsProps) {
 	return (
 		<div className="buttons">
-			{userValid ? (
+			{userValid && (
 				<div>
 					<button
 						className="form-control-b"
@@ -29,8 +28,6 @@ function Inputs({
 					>{`Change User (${user})`}</button>
 					{!(game === null) && <InputChoices onChoice={onChoice} game={game} />}
 				</div>
-			) : (
-				<InputUser onChangedUser={onChangedUser} />
 			)}
 		</div>
 	);

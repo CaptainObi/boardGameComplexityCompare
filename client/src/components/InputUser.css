@@ -10,9 +10,10 @@
 
 .form-control-b {
 	margin: 5px 0;
-	width: 100%;
+	width: 25ch;
 	height: 40px;
 	box-sizing: border-box;
+	align-self: center;
 	border: 1px;
 	border-radius: 2px;
 	border-color: black;

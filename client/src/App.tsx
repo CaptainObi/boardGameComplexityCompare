@@ -21,6 +21,11 @@ export interface GameElement {
 	rating: number;
 }
 
+enum Question {
+	Mechanically = "mechanically",
+	Depth = "depth",
+}
+
 interface PostWinner {
 	gameA: number;
 	gameB: number;
@@ -77,6 +82,9 @@ function App() {
 	const [userID, setUserID] = useState(0);
 	const [userValid, setUserValid] = useState(false);
 	const [games, setGames] = useState<Games | null>(null);
+	const [question, setQuestion] = useState<Question>(Question.Mechanically);
+	const [depth, setDepth] = useState("");
+	const [mechanically, setMechanically] = useState("");
 
 	const handleChangedUser = async (userI: string) => {
 		//const rest: Response = await fetch(`/api/user/${user}`);
@@ -95,6 +103,16 @@ function App() {
 			generateNewGames(userI);
 		} else {
 			setUserValid(false);
+		}
+	};
+
+	const handleClick = async (winner: string) => {
+		if (question === Question.Mechanically) {
+			setMechanically(winner);
+			setQuestion(Question.Depth);
+		} else {
+			setDepth(winner);
+			setQuestion(Question.Depth);
 		}
 	};
 

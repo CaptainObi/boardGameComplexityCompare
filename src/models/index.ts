@@ -1,23 +1,37 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 
-const devConfig: string =
-	`postgresql://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.POSTGRES_HOST}:${process.env.POSTGRES_PORT}/${process.env.POSTGRES_DB}` as string;
+const devConfig: string = `postgresql://${
+	process.env.POSTGRES_USER || "node"
+}:${process.env.POSTGRES_PASSWORD || "password"}@${
+	process.env.POSTGRES_HOST || "localhost"
+}:${process.env.POSTGRES_PORT || 5432}/${
+	process.env.POSTGRES_DB || "template1"
+}` as string;
 
 const proConfig: string = process.env.DATABASE_URL as string; //heroku addons
+
+console.log(devConfig);
 
 const result: string =
 	process.env.NODE_ENV === "production" ? proConfig : (devConfig as string);
 // Create a connection to the database
-const sequelize = new Sequelize(result, {
-	dialect: "postgres",
-	pool: { max: 9, min: 0, idle: 10000 },
-	dialectOptions: {
-		ssl: {
-			require: true,
-			rejectUnauthorized: false,
+if (process.env.NODE_ENV === "production") {
+	var sequelize = new Sequelize(result, {
+		dialect: "postgres",
+		pool: { max: 9, min: 0, idle: 10000 },
+		dialectOptions: {
+			ssl: {
+				require: true,
+				rejectUnauthorized: false,
+			},
 		},
-	},
-});
+	});
+} else {
+	var sequelize = new Sequelize(result, {
+		dialect: "postgres",
+		pool: { max: 9, min: 0, idle: 10000 },
+	});
+}
 
 try {
 	sequelize.authenticate();

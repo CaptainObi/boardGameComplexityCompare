@@ -4,13 +4,14 @@
 	padding: 0;
 	display: grid;
 	grid-template-areas:
-		"topbar topbar topbar"
-		"gameL buttons gameR"
-		"footer footer footer";
+		"topbar topbar"
+		"buttons buttons"
+		"gameL gameR"
+		"footer footer";
 
-	grid-template-columns: 3fr 1fr 3fr;
+	grid-template-columns: 3fr 3fr;
 
-	grid-template-rows: 70px auto 70px;
+	grid-template-rows: 70px auto auto 70px;
 
 	align-items: center;
 	justify-items: center;
