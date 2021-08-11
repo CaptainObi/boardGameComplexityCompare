@@ -7,7 +7,7 @@ import gameRoutes from "./routes/game";
 import comparisonRoutes from "./routes/comparison";
 import eloRoutes from "./routes/elo";
 const router: Express = express();
-import { join } from "path";
+import path from "path";
 
 /** Logging */
 router.use(morgan("dev"));
@@ -19,8 +19,8 @@ router.use(express.json());
 if (process.env.NODE_ENV === "production") {
 	//server static content
 	//npm run build
-	router.use(express.static(join(__dirname, "client/build")));
-	console.log(join(__dirname, "client/build"));
+	router.use(express.static(path.join(__dirname, "client/build")));
+	console.log(path.join(__dirname, "client/build"));
 	console.log("ello");
 }
 
@@ -65,7 +65,7 @@ httpServer.listen(PORT, () =>
 
 router.use(
 	"*",
-	router.get("/", (req, res) => {
-		res.sendFile(join(__dirname, "client/build/index.html"));
+	router.get("*", (req, res) => {
+		res.sendFile(path.join(__dirname, "client/build/index.html"));
 	})
 );
