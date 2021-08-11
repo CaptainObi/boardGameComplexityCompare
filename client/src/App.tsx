@@ -6,7 +6,6 @@ import { useState } from "react";
 import Game from "./components/Game";
 import axios, { AxiosResponse } from "axios";
 import EloRank from "elo-rank";
-import { createPartiallyEmittedExpression } from "typescript";
 
 const elo = new EloRank(24);
 
@@ -87,7 +86,7 @@ function App() {
 		});
 
 		const data: GetUserID = await rest.data;
-		console.log(data);
+		//console.log(data);
 		if (Number(rest.status) === 200 || Number(rest.status) === 304) {
 			setUserValid(true);
 			setUser(userI);
@@ -154,10 +153,10 @@ function App() {
 
 		// function to fetch two more games
 
-		console.log([getGameAElo, getGameBElo]);
+		//console.log([getGameAElo, getGameBElo]);
 
-		const gameA: Elo = getGameAElo.data[0];
-		const gameB: Elo = getGameBElo.data[0];
+		const gameA: Elo = getGameAElo.data;
+		const gameB: Elo = getGameBElo.data;
 
 		const computeNewElo = (AElo: number, BElo: number) => {
 			const expectedScoreA: number = elo.getExpected(AElo, BElo);
@@ -178,7 +177,7 @@ function App() {
 			return { gameA: newGameA, gameB: newGameB };
 		};
 
-		console.log(gameA.ComplexElo);
+		//console.log(gameA.ComplexElo);
 
 		const complexNewElo = computeNewElo(
 			Number(gameA.ComplexElo),
@@ -189,7 +188,7 @@ function App() {
 			Number(gameB.DepthElo)
 		);
 
-		console.log(complexNewElo, depthNewElo);
+		//console.log(complexNewElo, depthNewElo);
 
 		const newGameA: Elo = {
 			gameID: gameA.gameID,
@@ -249,7 +248,7 @@ function App() {
 				`/api/comparison/${userID}`
 			);
 
-			console.log(comparisons);
+			//console.log(comparisons);
 
 			let combos: number[][] = [[]];
 
@@ -258,7 +257,7 @@ function App() {
 			}
 
 			for (let i in results) {
-				console.log(combos, results[i], "hello");
+				//console.log(combos, results[i], "hello");
 				const a: string = JSON.stringify(combos);
 				const b: string = JSON.stringify(results[i]);
 				const c: string = JSON.stringify([results[i][1], results[i][0]]);
