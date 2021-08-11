@@ -11,6 +11,12 @@ const result: string =
 const sequelize = new Sequelize(result, {
 	dialect: "postgres",
 	pool: { max: 9, min: 0, idle: 10000 },
+	dialectOptions: {
+		ssl: {
+			require: true,
+			rejectUnauthorized: false,
+		},
+	},
 });
 
 try {
