@@ -123,7 +123,7 @@ const getUserPlays = async (
 	let id: string = req.params.id;
 	// get the post
 	let result: AxiosResponse = await axios.get(
-		`https://api.geekdo.com/xmlapi2/plays?username=${id}`,
+		`https://api.geekdo.com/xmlapi2/plays?username=${id}&subtype=boardgame`,
 		{
 			headers: {
 				Accept: "application/json",
@@ -155,8 +155,9 @@ const getUserPlays = async (
 
 	const map: Promise<PlayElement[]>[] = iterations.map(async (e: number) => {
 		const page: number = e + 1;
+
 		let result: AxiosResponse = await axios.get(
-			`https://api.geekdo.com/xmlapi2/plays?username=${id}&page=${page}`,
+			`https://api.geekdo.com/xmlapi2/plays?username=${id}&page=${page}&subtype=boardgame`,
 			{
 				headers: {
 					Accept: "application/json",

@@ -309,20 +309,19 @@ function App() {
 			});
 
 			const gamesRes: number[] = await rest.data.message;
+			console.log(gamesRes, "LOG");
 			if (rest.data.message === "404: User not found") {
 				alert("You haven't logged enough games on BGG");
 			} else if (gamesRes.length <= 2) {
 				alert("You haven't logged enough games on BGG");
 			} else {
-				let preShuffle = [];
+				const playedGames = await axios.get(
+					`/api/elo/ids/${JSON.stringify(gamesRes)}`
+				);
 
-				for (let i = 0; i < gamesRes.length - 1; i++) {
-					for (let j = i + 1; j < gamesRes.length; j++) {
-						preShuffle.push([Number(gamesRes[i]), Number(gamesRes[j])]);
-					}
-				}
+				const results: Elo[] = await playedGames.data;
 
-				const results: any[] = shuffle(preShuffle);
+				results.sort((a, b) => a.ComplexElo - b.ComplexElo);
 
 				const comparisons: AxiosResponse = await axios.get(
 					`/api/comparison/${userID}`
@@ -336,34 +335,115 @@ function App() {
 					combos = comparisons.data.map((e: PostWinner) => [e.gameA, e.gameB]);
 				}
 
-				for (let i in results) {
-					//console.log(combos, results[i], "hello");
-					const a: string = JSON.stringify(combos);
-					const b: string = JSON.stringify(results[i]);
-					const c: string = JSON.stringify([results[i][1], results[i][0]]);
+				for (let i = 0; i < 1000000000000; i++) {
+					if (i < results.length * 10) {
+						const seed: number = Math.floor(Math.random() * results.length - 1);
+						let secondarySeed: number = Math.floor(Math.random() * 20) - 10;
+						secondarySeed =
+							seed + secondarySeed > results.length - 1
+								? seed + secondarySeed - results.length - 1
+								: secondarySeed;
 
-					if (a.indexOf(b) !== -1) {
-						//console.log("already done boyo");
-					} else if (a.indexOf(c) !== -1) {
-						//console.log("already done boyo");
-					} else if (
-						[results[i][0], results[i][1]] ===
-							[games?.gameA.id, games?.gameB.id] ||
-						[results[i][1], results[i][0]] ===
-							[games?.gameA.id, games?.gameB.id]
-					) {
-						//
-					} else if (
-						[results[i][0], results[i][1]] ===
-							[nextGames?.gameA.id, nextGames?.gameB.id] ||
-						[results[i][1], results[i][0]] ===
-							[nextGames?.gameA.id, nextGames?.gameB.id]
-					) {
-						//
+						//console.log(combos, results[i], "hello");
+						const a: string = JSON.stringify(combos);
+						const b: string = JSON.stringify([
+							String(results[seed].gameID),
+							String(results[seed + secondarySeed].gameID),
+						]);
+						const c: string = JSON.stringify([
+							String(results[seed + secondarySeed].gameID),
+							String(results[seed].gameID),
+						]);
+
+						if (a.indexOf(b) !== -1) {
+							//console.log("already done boyo");
+						} else if (a.indexOf(c) !== -1) {
+							//console.log("already done boyo");
+						} else if (
+							[
+								String(results[seed].gameID),
+								String(results[seed + secondarySeed].gameID),
+							] === [games?.gameA.id, games?.gameB.id] ||
+							[
+								String(results[seed + secondarySeed].gameID),
+								String(results[seed].gameID),
+							] === [games?.gameA.id, games?.gameB.id]
+						) {
+							//
+						} else if (
+							[
+								String(results[seed].gameID),
+								String(results[seed + secondarySeed].gameID),
+							] === [nextGames?.gameA.id, nextGames?.gameB.id] ||
+							[
+								String(results[seed + secondarySeed].gameID),
+								String(results[seed].gameID),
+							] === [nextGames?.gameA.id, nextGames?.gameB.id]
+						) {
+							//
+						} else {
+							fetchGameData(
+								results[seed].gameID,
+								results[seed + secondarySeed].gameID,
+								update
+							);
+
+							break;
+						}
 					} else {
-						fetchGameData(results[i][0], results[i][1], update);
+						let preShuffle = [];
 
-						break;
+						for (let i = 0; i < gamesRes.length - 1; i++) {
+							for (let j = i + 1; j < gamesRes.length; j++) {
+								preShuffle.push([Number(gamesRes[i]), Number(gamesRes[j])]);
+							}
+						}
+
+						const results: any[] = shuffle(preShuffle);
+
+						const comparisons: AxiosResponse = await axios.get(
+							`/api/comparison/${userID}`
+						);
+
+						//console.log(comparisons);
+
+						if (!(comparisons.data === "")) {
+							combos = comparisons.data.map((e: PostWinner) => [
+								e.gameA,
+								e.gameB,
+							]);
+						}
+
+						for (let i in results) {
+							//console.log(combos, results[i], "hello");
+							const a: string = JSON.stringify(combos);
+							const b: string = JSON.stringify(results[i]);
+							const c: string = JSON.stringify([results[i][1], results[i][0]]);
+
+							if (a.indexOf(b) !== -1) {
+								//console.log("already done boyo");
+							} else if (a.indexOf(c) !== -1) {
+								//console.log("already done boyo");
+							} else if (
+								[results[i][0], results[i][1]] ===
+									[games?.gameA.id, games?.gameB.id] ||
+								[results[i][1], results[i][0]] ===
+									[games?.gameA.id, games?.gameB.id]
+							) {
+								//
+							} else if (
+								[results[i][0], results[i][1]] ===
+									[nextGames?.gameA.id, nextGames?.gameB.id] ||
+								[results[i][1], results[i][0]] ===
+									[nextGames?.gameA.id, nextGames?.gameB.id]
+							) {
+								//
+							} else {
+								fetchGameData(results[i][0], results[i][1], update);
+
+								break;
+							}
+						}
 					}
 				}
 			}
