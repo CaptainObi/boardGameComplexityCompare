@@ -1,4 +1,3 @@
-import { Games, Choice } from "../App";
 import "../App.css";
 import InputUser from "./InputUser";
 import "./InputUser.css";
@@ -6,19 +5,11 @@ import "./InputUser.css";
 
 type InputsProps = {
 	onChangedUser: (user: string) => Promise<void>;
-	onChoice: (user: Choice) => Promise<void>;
 	userValid: boolean;
 	user: string;
-	game: Games | null;
 };
 
-function Inputs({
-	onChangedUser,
-	userValid,
-	user,
-	game,
-	onChoice,
-}: InputsProps) {
+function Inputs({ onChangedUser, userValid, user }: InputsProps) {
 	return (
 		<div className={userValid ? "buttons" : "button"}>
 			{userValid ? (

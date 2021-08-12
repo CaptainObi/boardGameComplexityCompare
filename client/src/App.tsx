@@ -119,17 +119,20 @@ function App() {
 		}
 	};
 
-	const handleClick = async (winner: number) => {
+	const handleGameClick = async (winner: number) => {
 		if (question === Question.Mechanically) {
 			setMechanically(winner);
 			setQuestion(Question.Depth);
 		} else {
-			handleChoice({ winnerDepth: winner, winnerMechanically: mechanically });
+			handleChoice(
+				{ winnerDepth: winner, winnerMechanically: mechanically },
+				false
+			);
 			setQuestion(Question.Mechanically);
 		}
 	};
 
-	const handleChoice = async (winners: Choice) => {
+	const handleChoice = async (winners: Choice, skip: boolean) => {
 		const getGameA: AxiosResponse = await axios.get(
 			`/api/elo/${games?.gameA.id}`
 		);
@@ -158,13 +161,23 @@ function App() {
 			});
 		}
 
-		const data: PostWinner = {
-			gameA: Number(games?.gameA.id),
-			gameB: Number(games?.gameB.id),
-			winnerMechanically: Number(winners.winnerMechanically),
-			winnerDepth: Number(winners.winnerDepth),
-			userID: userID,
-		};
+		let data;
+
+		if (skip === false) {
+			data = {
+				gameA: Number(games?.gameA.id),
+				gameB: Number(games?.gameB.id),
+				winnerMechanically: Number(winners.winnerMechanically),
+				winnerDepth: Number(winners.winnerDepth),
+				userID: userID,
+			};
+		} else {
+			data = {
+				gameA: Number(games?.gameA.id),
+				gameB: Number(games?.gameB.id),
+				userID: userID,
+			};
+		}
 
 		await axios.post("/api/comparison/", {
 			body: data,
@@ -174,71 +187,75 @@ function App() {
 			},
 		});
 
-		// retrive ELOS and save
-		const getGameAElo: AxiosResponse = await axios.get(
-			`/api/elo/${games?.gameA.id}`
-		);
-		const getGameBElo: AxiosResponse = await axios.get(
-			`/api/elo/${games?.gameB.id}`
-		);
-
-		// function to fetch two more games
-
-		//console.log([getGameAElo, getGameBElo]);
-
-		const gameA: Elo = getGameAElo.data;
-		const gameB: Elo = getGameBElo.data;
-
-		const computeNewElo = (AElo: number, BElo: number) => {
-			const expectedScoreA: number = elo.getExpected(AElo, BElo);
-
-			const expectedScoreB: number = elo.getExpected(BElo, AElo);
-
-			const newGameA = elo.updateRating(
-				expectedScoreA,
-				winners.winnerMechanically === gameA.gameID ? 1 : 0,
-				AElo
+		if (skip === false) {
+			// retrive ELOS and save
+			const getGameAElo: AxiosResponse = await axios.get(
+				`/api/elo/${games?.gameA.id}`
 			);
-			const newGameB = elo.updateRating(
-				expectedScoreB,
-				winners.winnerMechanically === gameB.gameID ? 1 : 0,
-				gameB.ComplexElo
+			const getGameBElo: AxiosResponse = await axios.get(
+				`/api/elo/${games?.gameB.id}`
 			);
 
-			return { gameA: newGameA, gameB: newGameB };
-		};
+			// function to fetch two more games
 
-		//console.log(gameA.ComplexElo);
+			//console.log([getGameAElo, getGameBElo]);
 
-		const complexNewElo = computeNewElo(
-			Number(gameA.ComplexElo),
-			Number(gameB.ComplexElo)
-		);
-		const depthNewElo = computeNewElo(
-			Number(gameA.DepthElo),
-			Number(gameB.DepthElo)
-		);
+			const gameA: Elo = getGameAElo.data;
+			const gameB: Elo = getGameBElo.data;
 
-		//console.log(complexNewElo, depthNewElo);
+			const computeNewElo = (AElo: number, BElo: number) => {
+				const expectedScoreA: number = elo.getExpected(AElo, BElo);
 
-		const newGameA: Elo = {
-			gameID: gameA.gameID,
-			DepthElo: depthNewElo.gameA,
-			ComplexElo: complexNewElo.gameA,
-		};
-		const newGameB: Elo = {
-			gameID: gameB.gameID,
-			DepthElo: depthNewElo.gameB,
-			ComplexElo: complexNewElo.gameB,
-		};
+				const expectedScoreB: number = elo.getExpected(BElo, AElo);
 
-		await axios.post("/api/elo/update", {
-			body: newGameA,
-		});
+				const newGameA = elo.updateRating(
+					expectedScoreA,
+					winners.winnerMechanically === gameA.gameID ? 1 : 0,
+					AElo
+				);
+				const newGameB = elo.updateRating(
+					expectedScoreB,
+					winners.winnerMechanically === gameB.gameID ? 1 : 0,
+					gameB.ComplexElo
+				);
 
-		await axios.post("/api/elo/update", {
-			body: newGameB,
-		});
+				return { gameA: newGameA, gameB: newGameB };
+			};
+
+			//console.log(gameA.ComplexElo);
+
+			const complexNewElo = computeNewElo(
+				Number(gameA.ComplexElo),
+				Number(gameB.ComplexElo)
+			);
+			const depthNewElo = computeNewElo(
+				Number(gameA.DepthElo),
+				Number(gameB.DepthElo)
+			);
+
+			//console.log(complexNewElo, depthNewElo);
+
+			const newGameA: Elo = {
+				gameID: gameA.gameID,
+				DepthElo: depthNewElo.gameA,
+				ComplexElo: complexNewElo.gameA,
+			};
+			const newGameB: Elo = {
+				gameID: gameB.gameID,
+				DepthElo: depthNewElo.gameB,
+				ComplexElo: complexNewElo.gameB,
+			};
+
+			await axios.post("/api/elo/update", {
+				body: newGameA,
+			});
+
+			await axios.post("/api/elo/update", {
+				body: newGameB,
+			});
+		} else {
+			setQuestion(Question.Mechanically);
+		}
 
 		generateNewGames(user, WhichGames.Current);
 	};
@@ -319,25 +336,6 @@ function App() {
 		}
 	};
 
-	const handleSkip = async () => {
-		const data = {
-			gameA: Number(games?.gameA.id),
-			gameB: Number(games?.gameB.id),
-			userID: userID,
-		};
-
-		await axios.post("/api/comparison/", {
-			body: data,
-			header: {
-				"Content-Type": "application/json",
-				Accept: "application/json",
-			},
-		});
-
-		setQuestion(Question.Mechanically);
-		generateNewGames(user, WhichGames.Current);
-	};
-
 	const handlePageChange = () => {
 		if (page === Page.Main) {
 			setPage(Page.Data);
@@ -355,11 +353,14 @@ function App() {
 						user={user}
 						onChangedUser={handleChangedUser}
 						userValid={userValid}
-						game={games}
-						onChoice={handleChoice}
 					/>
 					{userValid && (
-						<button onClick={handleSkip} className="skip">
+						<button
+							onClick={() =>
+								handleChoice({ winnerDepth: 0, winnerMechanically: 0 }, true)
+							}
+							className="skip"
+						>
 							Skip
 						</button>
 					)}
@@ -373,7 +374,7 @@ function App() {
 					{games !== null && (
 						<Game
 							key="left"
-							onBtnClick={handleClick}
+							onBtnClick={handleGameClick}
 							game={games.gameA}
 							align="gameL"
 						/>
@@ -381,7 +382,7 @@ function App() {
 					{games !== null && (
 						<Game
 							key="right"
-							onBtnClick={handleClick}
+							onBtnClick={handleGameClick}
 							game={games.gameB}
 							align="gameR"
 						/>
