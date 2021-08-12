@@ -5,7 +5,7 @@
 	display: grid;
 	grid-template-areas:
 		"topbar topbar"
-		"buttons buttons"
+		"buttons skip"
 		"question question"
 		"gameL gameR"
 		"footer footer";
@@ -22,24 +22,24 @@
 
 .gameL {
 	grid-area: gameL;
-	width: 90%;
-	height: 90%;
+	width: 96%;
+	height: 96%;
 	align-items: center;
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
-	margin: 5%;
+	margin: 2%;
 }
 
 .gameR {
 	grid-area: gameR;
-	width: 90%;
-	height: 90%;
+	width: 96%;
+	height: 96%;
 	align-items: center;
 	display: flex;
 	justify-content: center;
 	flex-direction: column;
-	margin: 5%;
+	margin: 2%;
 }
 
 .question {
@@ -57,8 +57,43 @@
 .buttons {
 	grid-area: buttons;
 	display: flex;
+	justify-content: right;
+	flex-direction: column;
+	justify-self: right;
+}
+
+.button {
+	display: flex;
+	grid-area: 2 / 1 / span 1 / span 2;
 	justify-content: center;
 	flex-direction: column;
+	justify-self: center;
+}
+
+.skip {
+	grid-area: skip;
+	justify-self: left;
+	margin: 10px;
+	width: 25ch;
+	height: 40px;
+	box-sizing: border-box;
+	align-self: center;
+	border: 1px;
+	border-radius: 2px;
+	border-color: black;
+	padding: 3px 7px;
+	color: aliceblue;
+	background-color: hsl(12, 95%, 47%);
+	cursor: pointer;
+	font-size: auto;
+}
+
+.skip:focus {
+	background-color: hsl(12, 95%, 60%);
+}
+
+.skip:active {
+	transform: scale(0.98);
 }
 
 .footer {

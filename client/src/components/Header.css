@@ -36,3 +36,27 @@ h1 {
 	padding-top: 5px;
 	padding-bottom: 5px;
 }
+
+.btn {
+	margin: 15px;
+	width: 25ch;
+	height: 40px;
+	box-sizing: border-box;
+	align-self: center;
+	border: 1px;
+	border-radius: 2px;
+	border-color: black;
+	padding: 3px 7px;
+	color: aliceblue;
+	background-color: dodgerblue;
+	cursor: pointer;
+	font-size: auto;
+}
+
+.btn:focus {
+	background-color: deepskyblue;
+}
+
+.btn:active {
+	transform: scale(0.98);
+}

@@ -6,6 +6,7 @@ import { useState } from "react";
 import Game from "./components/Game";
 import axios, { AxiosResponse } from "axios";
 import EloRank from "elo-rank";
+import DataPage from "./DataPage";
 
 const elo = new EloRank(24);
 
@@ -24,6 +25,16 @@ export interface GameElement {
 enum Question {
 	Mechanically = "mechanically",
 	Depth = "depth",
+}
+
+enum WhichGames {
+	Next = "next",
+	Current = "current",
+}
+
+export enum Page {
+	Main = "main",
+	Data = "data",
 }
 
 interface PostWinner {
@@ -84,6 +95,8 @@ function App() {
 	const [games, setGames] = useState<Games | null>(null);
 	const [question, setQuestion] = useState<Question>(Question.Mechanically);
 	const [mechanically, setMechanically] = useState(0);
+	const [nextGames, setNextGames] = useState<Games | null>(null);
+	const [page, setPage] = useState<Page>(Page.Main);
 
 	const handleChangedUser = async (userI: string) => {
 		//const rest: Response = await fetch(`/api/user/${user}`);
@@ -99,7 +112,8 @@ function App() {
 			setUser(userI);
 			setUserID(Number(data.message));
 
-			generateNewGames(userI);
+			generateNewGames(userI, WhichGames.Current);
+			generateNewGames(userI, WhichGames.Next);
 		} else {
 			setUserValid(false);
 		}
@@ -109,11 +123,9 @@ function App() {
 		if (question === Question.Mechanically) {
 			setMechanically(winner);
 			setQuestion(Question.Depth);
-			console.log("now going to depth");
 		} else {
 			handleChoice({ winnerDepth: winner, winnerMechanically: mechanically });
 			setQuestion(Question.Mechanically);
-			console.log("now going to mech");
 		}
 	};
 
@@ -228,105 +240,157 @@ function App() {
 			body: newGameB,
 		});
 
-		generateNewGames(user);
+		generateNewGames(user, WhichGames.Current);
 	};
 
-	const fetchGameData = async (gameA: number, gameB: number) => {
+	const fetchGameData = async (
+		gameA: number,
+		gameB: number,
+		update: WhichGames
+	) => {
 		const restA: Response = await fetch(`/api/game/${gameA}`);
 		const dataA: GameRes = await restA.json();
 		const restB: Response = await fetch(`/api/game/${gameB}`);
 		const dataB: GameRes = await restB.json();
 
 		const data: Games = { gameA: dataA.message, gameB: dataB.message };
-
-		setGames(data);
+		if (update === WhichGames.Current) {
+			setGames(data);
+		} else {
+			setNextGames(data);
+		}
 	};
 
-	const generateNewGames = async (userI: string) => {
-		const rest: AxiosResponse = await axios.get(`/api/user/games/${userI}`, {
-			validateStatus: (status: number) => status === 404 || status === 200,
-		});
-
-		const games: number[] = await rest.data.message;
-		if (rest.data.message === "404: User not found") {
-			alert("You haven't logged enough games on BGG");
-		} else if (games.length <= 2) {
-			alert("You haven't logged enough games on BGG");
+	const generateNewGames = async (userI: string, update: WhichGames) => {
+		if (update === WhichGames.Current && !(nextGames === null)) {
+			setGames(nextGames);
+			// set the game to the current game
+			generateNewGames(userI, WhichGames.Next);
 		} else {
-			let preShuffle = [];
+			const rest: AxiosResponse = await axios.get(`/api/user/games/${userI}`, {
+				validateStatus: (status: number) => status === 404 || status === 200,
+			});
 
-			for (let i = 0; i < games.length - 1; i++) {
-				for (let j = i + 1; j < games.length; j++) {
-					preShuffle.push([Number(games[i]), Number(games[j])]);
+			const games: number[] = await rest.data.message;
+			if (rest.data.message === "404: User not found") {
+				alert("You haven't logged enough games on BGG");
+			} else if (games.length <= 2) {
+				alert("You haven't logged enough games on BGG");
+			} else {
+				let preShuffle = [];
+
+				for (let i = 0; i < games.length - 1; i++) {
+					for (let j = i + 1; j < games.length; j++) {
+						preShuffle.push([Number(games[i]), Number(games[j])]);
+					}
 				}
-			}
 
-			const results: any[] = shuffle(preShuffle);
+				const results: any[] = shuffle(preShuffle);
 
-			const comparisons: AxiosResponse = await axios.get(
-				`/api/comparison/${userID}`
-			);
+				const comparisons: AxiosResponse = await axios.get(
+					`/api/comparison/${userID}`
+				);
 
-			//console.log(comparisons);
+				//console.log(comparisons);
 
-			let combos: number[][] = [[]];
+				let combos: number[][] = [[]];
 
-			if (!(comparisons.data === "")) {
-				combos = comparisons.data.map((e: PostWinner) => [e.gameA, e.gameB]);
-			}
+				if (!(comparisons.data === "")) {
+					combos = comparisons.data.map((e: PostWinner) => [e.gameA, e.gameB]);
+				}
 
-			for (let i in results) {
-				//console.log(combos, results[i], "hello");
-				const a: string = JSON.stringify(combos);
-				const b: string = JSON.stringify(results[i]);
-				const c: string = JSON.stringify([results[i][1], results[i][0]]);
+				for (let i in results) {
+					//console.log(combos, results[i], "hello");
+					const a: string = JSON.stringify(combos);
+					const b: string = JSON.stringify(results[i]);
+					const c: string = JSON.stringify([results[i][1], results[i][0]]);
 
-				if (a.indexOf(b) !== -1) {
-					//
-				} else if (a.indexOf(c) !== -1) {
-					//
-				} else {
-					fetchGameData(results[i][0], results[i][1]);
-					break;
+					if (a.indexOf(b) !== -1) {
+						console.log("already done boyo");
+					} else if (a.indexOf(c) !== -1) {
+						console.log("already done boyo");
+					} else {
+						fetchGameData(results[i][0], results[i][1], update);
+
+						break;
+					}
 				}
 			}
 		}
 	};
 
+	const handleSkip = async () => {
+		const data = {
+			gameA: Number(games?.gameA.id),
+			gameB: Number(games?.gameB.id),
+			userID: userID,
+		};
+
+		await axios.post("/api/comparison/", {
+			body: data,
+			header: {
+				"Content-Type": "application/json",
+				Accept: "application/json",
+			},
+		});
+
+		setQuestion(Question.Mechanically);
+		generateNewGames(user, WhichGames.Current);
+	};
+
+	const handlePageChange = () => {
+		if (page === Page.Main) {
+			setPage(Page.Data);
+		} else {
+			setPage(Page.Main);
+		}
+	};
+
 	return (
-		<main className="div">
-			<Header />
-			<Inputs
-				user={user}
-				onChangedUser={handleChangedUser}
-				userValid={userValid}
-				game={games}
-				onChoice={handleChoice}
-			/>
-			{userValid && (
-				<h2 className="question">
-					{question === Question.Mechanically
-						? "Which game is more mechanically complex?"
-						: "Which game has more depth?"}
-				</h2>
+		<div>
+			{page === Page.Main ? (
+				<main className="div">
+					<Header page={page} onButtonClick={handlePageChange} />
+					<Inputs
+						user={user}
+						onChangedUser={handleChangedUser}
+						userValid={userValid}
+						game={games}
+						onChoice={handleChoice}
+					/>
+					{userValid && (
+						<button onClick={handleSkip} className="skip">
+							Skip
+						</button>
+					)}
+					{userValid && (
+						<h2 className="question">
+							{question === Question.Mechanically
+								? "Which game is more mechanically complex?"
+								: "Which game has more depth?"}
+						</h2>
+					)}
+					{games !== null && (
+						<Game
+							key="left"
+							onBtnClick={handleClick}
+							game={games.gameA}
+							align="gameL"
+						/>
+					)}
+					{games !== null && (
+						<Game
+							key="right"
+							onBtnClick={handleClick}
+							game={games.gameB}
+							align="gameR"
+						/>
+					)}
+				</main>
+			) : (
+				<DataPage page={page} onButtonClick={handlePageChange} />
 			)}
-			{games !== null && (
-				<Game
-					key="left"
-					onBtnClick={handleClick}
-					game={games.gameA}
-					align="gameL"
-				/>
-			)}
-			{games !== null && (
-				<Game
-					key="right"
-					onBtnClick={handleClick}
-					game={games.gameB}
-					align="gameR"
-				/>
-			)}
-		</main>
+		</div>
 	);
 }
 

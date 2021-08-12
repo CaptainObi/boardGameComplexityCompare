@@ -1,0 +1,8 @@
+.main {
+	display: flex;
+	align-items: left;
+	justify-content: left;
+	flex-direction: column;
+	width: 100%;
+	text-align: left;
+}

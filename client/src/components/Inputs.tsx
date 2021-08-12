@@ -20,7 +20,7 @@ function Inputs({
 	onChoice,
 }: InputsProps) {
 	return (
-		<div className="buttons">
+		<div className={userValid ? "buttons" : "button"}>
 			{userValid ? (
 				<div>
 					<button

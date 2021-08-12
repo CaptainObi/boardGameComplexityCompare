@@ -1,6 +1,9 @@
 import axios, { AxiosResponse } from "axios";
 import MUIDataTable from "mui-datatables";
 import { useState, useEffect } from "react";
+import Header from "./components/Header";
+import { Page } from "./App";
+import "./DataPage.css";
 
 interface Elo {
 	gameID: number;
@@ -31,15 +34,21 @@ interface Rows {
 	DepthElo: number | undefined;
 }
 
-function DataPage() {
+type DataPageProps = {
+	page: Page;
+	onButtonClick: () => void;
+};
+
+function DataPage({ page, onButtonClick }: DataPageProps) {
 	const [rows, setRows] = useState<Rows[]>([
-		{ Image: "test", Name: "test", ComplexElo: 2132, DepthElo: 32432 },
+		{ Image: "LOADING", Name: "LOADING", ComplexElo: 2132, DepthElo: 32432 },
 	]);
 	const columns = ["ComplexElo", "DepthElo", "Image", "Name"];
 
 	const options: any = {
 		filterType: "checkbox",
 		filter: "false",
+		selectableRows: "none",
 		onRowsDelete: () => false,
 	};
 
@@ -111,12 +120,19 @@ function DataPage() {
 		getRows();
 	}, []);
 	return (
-		<MUIDataTable
-			title={"Games"}
-			data={rows}
-			columns={columns}
-			options={options}
-		/>
+		<div className="main">
+			<div className="header">
+				<Header page={page} onButtonClick={onButtonClick} />
+			</div>
+			<div className="table">
+				<MUIDataTable
+					title={"Ranking of all games ranked"}
+					data={rows}
+					columns={columns}
+					options={options}
+				/>
+			</div>
+		</div>
 	);
 }
 
