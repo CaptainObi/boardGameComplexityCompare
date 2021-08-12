@@ -25,7 +25,7 @@ function InputUser({ onChangedUser }: InputUserProps) {
 			<div>
 				<input
 					type="text"
-					placeholder="Username"
+					placeholder="BGG Username"
 					className="form-control-i"
 					value={text}
 					onChange={(e) => setText(e.target.value)}
