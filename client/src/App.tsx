@@ -288,17 +288,17 @@ function App() {
 				validateStatus: (status: number) => status === 404 || status === 200,
 			});
 
-			const games: number[] = await rest.data.message;
+			const gamesRes: number[] = await rest.data.message;
 			if (rest.data.message === "404: User not found") {
 				alert("You haven't logged enough games on BGG");
-			} else if (games.length <= 2) {
+			} else if (gamesRes.length <= 2) {
 				alert("You haven't logged enough games on BGG");
 			} else {
 				let preShuffle = [];
 
-				for (let i = 0; i < games.length - 1; i++) {
-					for (let j = i + 1; j < games.length; j++) {
-						preShuffle.push([Number(games[i]), Number(games[j])]);
+				for (let i = 0; i < gamesRes.length - 1; i++) {
+					for (let j = i + 1; j < gamesRes.length; j++) {
+						preShuffle.push([Number(gamesRes[i]), Number(gamesRes[j])]);
 					}
 				}
 
@@ -323,9 +323,23 @@ function App() {
 					const c: string = JSON.stringify([results[i][1], results[i][0]]);
 
 					if (a.indexOf(b) !== -1) {
-						console.log("already done boyo");
+						//console.log("already done boyo");
 					} else if (a.indexOf(c) !== -1) {
-						console.log("already done boyo");
+						//console.log("already done boyo");
+					} else if (
+						[results[i][0], results[i][1]] ===
+							[games?.gameA.id, games?.gameB.id] ||
+						[results[i][1], results[i][0]] ===
+							[games?.gameA.id, games?.gameB.id]
+					) {
+						//
+					} else if (
+						[results[i][0], results[i][1]] ===
+							[nextGames?.gameA.id, nextGames?.gameB.id] ||
+						[results[i][1], results[i][0]] ===
+							[nextGames?.gameA.id, nextGames?.gameB.id]
+					) {
+						//
 					} else {
 						fetchGameData(results[i][0], results[i][1], update);
 
