@@ -344,6 +344,10 @@ function App() {
 								? seed + secondarySeed - results.length - 1
 								: secondarySeed;
 
+						if (secondarySeed === 0) {
+							secondarySeed = 1;
+						}
+
 						//console.log(combos, results[i], "hello");
 						const a: string = JSON.stringify(combos);
 						const b: string = JSON.stringify([
