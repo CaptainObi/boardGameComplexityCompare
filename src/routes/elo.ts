@@ -5,6 +5,6 @@ const router = express.Router();
 router.get("/", controller.getAll);
 router.get("/:id", controller.getID);
 router.post("/", controller.postElo);
-router.post("/update", controller.updateElo);
+router.patch("/update", controller.updateElo);
 
 export = router;

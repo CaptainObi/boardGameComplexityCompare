@@ -5,6 +5,13 @@ interface Elo {
 	gameID: number;
 	ComplexElo: number;
 	DepthElo: number;
+	thumbnail: string | null;
+	image: string | null;
+	name: string | null;
+	yearpublished: number;
+	rank: number;
+	weight: number;
+	rating: number;
 }
 
 const postElo = async (req: Request, res: Response, next: NextFunction) => {
@@ -25,6 +32,13 @@ const postElo = async (req: Request, res: Response, next: NextFunction) => {
 			gameID: reqBody.body.gameID,
 			ComplexElo: reqBody.body.ComplexElo,
 			DepthElo: reqBody.body.DepthElo,
+			thumbnail: reqBody.body.thumbnail,
+			image: reqBody.body.image,
+			name: reqBody.body.name,
+			yearpublished: reqBody.body.yearpublished,
+			rank: reqBody.body.rank,
+			weight: reqBody.body.weight,
+			rating: reqBody.body.rating,
 		};
 
 		// Save Customer in the database
@@ -45,7 +59,7 @@ const updateElo = async (req: Request, res: Response, next: NextFunction) => {
 	}
 
 	// Create a Customer
-	const newGame: Elo = {
+	const newGame = {
 		gameID: reqBody.body.gameID,
 		ComplexElo: reqBody.body.ComplexElo,
 		DepthElo: reqBody.body.DepthElo,

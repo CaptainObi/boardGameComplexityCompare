@@ -9,27 +9,21 @@ interface Elo {
 	gameID: number;
 	ComplexElo: number;
 	DepthElo: number;
-}
-
-export interface GameElement {
-	id: string;
-	thumbnail: string;
-	image: string;
-	name: string;
-	description: string[];
+	thumbnail: string | null;
+	image: string | null;
+	name: string | null;
 	yearpublished: number;
 	rank: number;
 	weight: number;
 	rating: number;
 }
 
-export interface GameRes {
-	message: GameElement;
-}
-
 interface Rows {
-	Image: string;
 	Name: string;
+
+	rating: number;
+	yearpublished: number;
+	weight: number;
 	ComplexElo: number | undefined;
 	DepthElo: number | undefined;
 }
@@ -41,9 +35,23 @@ type DataPageProps = {
 
 function DataPage({ page, onButtonClick }: DataPageProps) {
 	const [rows, setRows] = useState<Rows[]>([
-		{ Image: "LOADING", Name: "LOADING", ComplexElo: 2132, DepthElo: 32432 },
+		{
+			Name: "LOADING",
+			weight: 0,
+			rating: 0,
+			yearpublished: 0,
+			ComplexElo: 0,
+			DepthElo: 0,
+		},
 	]);
-	const columns = ["ComplexElo", "DepthElo", "Image", "Name"];
+	const columns = [
+		{ label: "Name", name: "Name" },
+		{ label: "Rating", name: "rating" },
+		{ label: "Year Published", name: "yearpublished" },
+		{ label: "BGG Weight", name: "weight" },
+		{ label: "Complexity", name: "ComplexElo" },
+		{ label: "Depth", name: "DepthElo" },
+	];
 
 	const options: any = {
 		filterType: "checkbox",
@@ -57,40 +65,20 @@ function DataPage({ page, onButtonClick }: DataPageProps) {
 			const res: AxiosResponse = await axios.get("/api/elo/");
 			const data: Elo[] = await res.data;
 
-			const axiosRequests = [];
-			const ids: number[] = data.map((e: Elo) => e.gameID);
-			for (let id of ids) {
-				axiosRequests.push(axios.get(`/api/game/${id}`));
-			}
+			setRows(
+				data.map((e: Elo) => {
+					const row: Rows = {
+						Name: String(e.name),
+						rating: e.rating,
+						yearpublished: e.yearpublished,
+						weight: e.weight,
+						ComplexElo: e.ComplexElo,
+						DepthElo: e.DepthElo,
+					};
+					return row;
+				})
+			);
 
-			let responseArray: AxiosResponse[];
-			responseArray = await Promise.all(axiosRequests);
-
-			const newRows: Rows[] = [] as Rows[];
-
-			for (let response of responseArray) {
-				console.log(
-					response.data.message.name,
-					response.data.message.thumbnail
-				);
-
-				const element: GameElement = response.data.message;
-
-				const newRow: Rows = {
-					ComplexElo: data.find((elo: Elo) => elo.gameID === Number(element.id))
-						?.ComplexElo,
-					DepthElo: data.find((elo: Elo) => elo.gameID === Number(element.id))
-						?.DepthElo,
-
-					Image: element.thumbnail,
-					Name: element.name,
-				};
-
-				console.log(newRow);
-				newRows.push(newRow);
-			}
-
-			setRows(newRows);
 			/*
 			//create a promise for each API call
 			

@@ -43,6 +43,13 @@ class Game extends Model {
 	public gameID!: number;
 	public ComplexElo!: number;
 	public DepthElo!: number;
+	public thumbnail!: string | null;
+	public image!: string | null;
+	public name!: string | null;
+	public yearpublished!: number;
+	public rank!: number;
+	public weight!: number;
+	public rating!: number;
 
 	public readonly createdAt!: Date;
 	public readonly updatedAt!: Date;
@@ -73,6 +80,34 @@ Game.init(
 		},
 		DepthElo: {
 			type: DataTypes.INTEGER,
+			allowNull: false,
+		},
+		thumbnail: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+		image: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+		name: {
+			type: DataTypes.STRING,
+			allowNull: true,
+		},
+		yearpublished: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		rank: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		weight: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		rating: {
+			type: DataTypes.STRING,
 			allowNull: false,
 		},
 	},

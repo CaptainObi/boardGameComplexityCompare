@@ -15,7 +15,6 @@ export interface GameElement {
 	thumbnail: string;
 	image: string;
 	name: string;
-	description: string[];
 	yearpublished: number;
 	rank: number;
 	weight: number;
@@ -67,6 +66,13 @@ interface Elo {
 	gameID: number;
 	ComplexElo: number;
 	DepthElo: number;
+	thumbnail: string | null;
+	image: string | null;
+	name: string | null;
+	yearpublished: number;
+	rank: number;
+	weight: number;
+	rating: number;
 }
 
 function shuffle(array: any[]) {
@@ -145,6 +151,13 @@ function App() {
 				gameID: Number(games?.gameA.id),
 				ComplexElo: 1000,
 				DepthElo: 1000,
+				thumbnail: String(games?.gameA.thumbnail),
+				image: String(games?.gameA.image),
+				name: String(games?.gameA.name),
+				yearpublished: Number(games?.gameA.yearpublished),
+				rank: Number(games?.gameA.yearpublished),
+				weight: Number(games?.gameA.weight),
+				rating: Number(games?.gameA.rating),
 			};
 			await axios.post("/api/elo/", {
 				body: newGame,
@@ -155,6 +168,13 @@ function App() {
 				gameID: Number(games?.gameB.id),
 				ComplexElo: 1000,
 				DepthElo: 1000,
+				thumbnail: String(games?.gameB.thumbnail),
+				image: String(games?.gameB.image),
+				name: String(games?.gameB.name),
+				yearpublished: Number(games?.gameB.yearpublished),
+				rank: Number(games?.gameB.yearpublished),
+				weight: Number(games?.gameB.weight),
+				rating: Number(games?.gameB.rating),
 			};
 			await axios.post("/api/elo/", {
 				body: newGame,
@@ -235,22 +255,22 @@ function App() {
 
 			//console.log(complexNewElo, depthNewElo);
 
-			const newGameA: Elo = {
+			const newGameA = {
 				gameID: gameA.gameID,
 				DepthElo: depthNewElo.gameA,
 				ComplexElo: complexNewElo.gameA,
 			};
-			const newGameB: Elo = {
+			const newGameB = {
 				gameID: gameB.gameID,
 				DepthElo: depthNewElo.gameB,
 				ComplexElo: complexNewElo.gameB,
 			};
 
-			await axios.post("/api/elo/update", {
+			await axios.patch("/api/elo/update", {
 				body: newGameA,
 			});
 
-			await axios.post("/api/elo/update", {
+			await axios.patch("/api/elo/update", {
 				body: newGameB,
 			});
 		} else {
