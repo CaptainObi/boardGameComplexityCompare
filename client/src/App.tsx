@@ -118,8 +118,8 @@ function App() {
 			setUser(userI);
 			setUserID(Number(data.message));
 
-			generateNewGames(userI, WhichGames.Current);
-			generateNewGames(userI, WhichGames.Next);
+			generateNewGames(userI, WhichGames.Current, null);
+			generateNewGames(userI, WhichGames.Next, null);
 		} else {
 			setUserValid(false);
 		}
@@ -277,7 +277,7 @@ function App() {
 			setQuestion(Question.Mechanically);
 		}
 
-		generateNewGames(user, WhichGames.Current);
+		generateNewGames(user, WhichGames.Current, games);
 	};
 
 	const fetchGameData = async (
@@ -298,11 +298,16 @@ function App() {
 		}
 	};
 
-	const generateNewGames = async (userI: string, update: WhichGames) => {
+	const generateNewGames = async (
+		userI: string,
+		update: WhichGames,
+		currentGames: Games | null
+	) => {
 		if (update === WhichGames.Current && !(nextGames === null)) {
 			setGames(nextGames);
 			// set the game to the current game
-			generateNewGames(userI, WhichGames.Next);
+			console.log("updating");
+			generateNewGames(userI, WhichGames.Next, nextGames);
 		} else {
 			const rest: AxiosResponse = await axios.get(`/api/user/games/${userI}`, {
 				validateStatus: (status: number) => status === 404 || status === 200,
