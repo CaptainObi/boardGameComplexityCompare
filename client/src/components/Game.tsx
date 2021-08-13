@@ -20,7 +20,7 @@ function Game({ game, align, onBtnClick }: GameProps) {
 	return (
 		<div
 			className={align}
-			style={{ backgroundColor: colors[1] }}
+			style={{ backgroundColor: "gray" }}
 			onClick={() => onBtnClick(Number(game.id))}
 		>
 			<h1>{game.name}</h1>
