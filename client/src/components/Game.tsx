@@ -1,4 +1,5 @@
 import { GameElement } from "../App";
+import { Image } from "use-image-color";
 import "./Game.css";
 import "../App.css";
 import useImageColor from "use-image-color";
@@ -12,21 +13,35 @@ type GameProps = {
 
 function Game({ game, align, onBtnClick }: GameProps) {
 	//const { data } = usePalette(game.image);
-
-	const { colors } = useImageColor(game.image, { cors: false });
+	const { colors } = useImageColor(game.image, {
+		cors: false,
+		format: "hex",
+		windowSize: 25,
+	});
 
 	console.log(colors);
+
+	let primary: string;
+	let secondary: string;
+
+	try {
+		primary = colors[0];
+		secondary = colors[1];
+	} catch (TypeError) {
+		primary = "black";
+		secondary = "gray";
+	}
 
 	return (
 		<div
 			className={align}
-			style={{ backgroundColor: "gray" }}
+			style={{ backgroundColor: secondary }}
 			onClick={() => onBtnClick(Number(game.id))}
 		>
-			<h1>{game.name}</h1>
-			<p>({game.yearpublished})</p>
+			<h1 style={{ color: primary }}>{game.name}</h1>
+			<p style={{ color: primary }}>({game.yearpublished})</p>
 			<div className="image">
-				<img src={game.image} alt="thumbnail" className="thumbnail" />
+				<Image src={game.image} thumbnail={game.thumbnail} />
 			</div>
 		</div>
 	);

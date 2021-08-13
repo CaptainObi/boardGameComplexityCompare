@@ -298,6 +298,36 @@ function App() {
 		}
 	};
 
+	const checkValidity = async (
+		combos: number[][],
+		resultA: string,
+		resultB: string
+	) => {
+		const a: string = JSON.stringify(combos);
+		const b: string = JSON.stringify([resultA, resultB]);
+		const c: string = JSON.stringify([resultB, resultA]);
+
+		if (a.indexOf(b) !== -1) {
+			return false;
+		} else if (a.indexOf(c) !== -1) {
+			return false;
+		} else if (
+			[resultA, resultB] === [games?.gameA.id, games?.gameB.id] ||
+			[resultB, resultA] === [games?.gameA.id, games?.gameB.id]
+		) {
+			return false;
+		} else if (
+			[resultA, resultB] === [nextGames?.gameA.id, nextGames?.gameB.id] ||
+			[resultB, resultA] === [nextGames?.gameA.id, nextGames?.gameB.id]
+		) {
+			return false;
+		} else {
+			return true;
+
+			//break;
+		}
+	};
+
 	const generateNewGames = async (
 		userI: string,
 		update: WhichGames,
@@ -360,50 +390,22 @@ function App() {
 							secondarySeed = 1;
 						}
 
+						secondarySeed = secondarySeed + seed;
+
 						//console.log(combos, results[i], "hello");
-						const a: string = JSON.stringify(combos);
-						const b: string = JSON.stringify([
-							String(results[seed].gameID),
-							String(results[seed + secondarySeed].gameID),
-						]);
-						const c: string = JSON.stringify([
-							String(results[seed + secondarySeed].gameID),
-							String(results[seed].gameID),
-						]);
+						const resultGameA: Elo = await results[seed];
+						const resultGameB: Elo = await results[secondarySeed];
 
-						if (a.indexOf(b) !== -1) {
-							//console.log("already done boyo");
-						} else if (a.indexOf(c) !== -1) {
-							//console.log("already done boyo");
-						} else if (
-							[
-								String(results[seed].gameID),
-								String(results[seed + secondarySeed].gameID),
-							] === [games?.gameA.id, games?.gameB.id] ||
-							[
-								String(results[seed + secondarySeed].gameID),
-								String(results[seed].gameID),
-							] === [games?.gameA.id, games?.gameB.id]
+						if (
+							(await checkValidity(
+								combos,
+								String(resultGameA.gameID),
+								String(resultGameB.gameID)
+							)) === true &&
+							typeof resultGameA !== undefined &&
+							typeof resultGameB !== undefined
 						) {
-							//
-						} else if (
-							[
-								String(results[seed].gameID),
-								String(results[seed + secondarySeed].gameID),
-							] === [nextGames?.gameA.id, nextGames?.gameB.id] ||
-							[
-								String(results[seed + secondarySeed].gameID),
-								String(results[seed].gameID),
-							] === [nextGames?.gameA.id, nextGames?.gameB.id]
-						) {
-							//
-						} else {
-							fetchGameData(
-								results[seed].gameID,
-								results[seed + secondarySeed].gameID,
-								update
-							);
-
+							fetchGameData(resultGameA.gameID, resultGameB.gameID, update);
 							break;
 						}
 					} else {
@@ -432,31 +434,11 @@ function App() {
 
 						for (let i in results) {
 							//console.log(combos, results[i], "hello");
-							const a: string = JSON.stringify(combos);
-							const b: string = JSON.stringify(results[i]);
-							const c: string = JSON.stringify([results[i][1], results[i][0]]);
-
-							if (a.indexOf(b) !== -1) {
-								//console.log("already done boyo");
-							} else if (a.indexOf(c) !== -1) {
-								//console.log("already done boyo");
-							} else if (
-								[results[i][0], results[i][1]] ===
-									[games?.gameA.id, games?.gameB.id] ||
-								[results[i][1], results[i][0]] ===
-									[games?.gameA.id, games?.gameB.id]
+							if (
+								(await checkValidity(combos, results[i][0], results[i][1])) ===
+								true
 							) {
-								//
-							} else if (
-								[results[i][0], results[i][1]] ===
-									[nextGames?.gameA.id, nextGames?.gameB.id] ||
-								[results[i][1], results[i][0]] ===
-									[nextGames?.gameA.id, nextGames?.gameB.id]
-							) {
-								//
-							} else {
 								fetchGameData(results[i][0], results[i][1], update);
-
 								break;
 							}
 						}
