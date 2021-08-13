@@ -1,7 +1,7 @@
 import { GameElement } from "../App";
 import "./Game.css";
 import "../App.css";
-import { usePalette } from "react-palette";
+//import { usePalette } from "react-palette";
 
 type GameProps = {
 	game: GameElement;
@@ -10,12 +10,12 @@ type GameProps = {
 };
 
 function Game({ game, align, onBtnClick }: GameProps) {
-	const { data } = usePalette(game.image);
+	//const { data } = usePalette(game.image);
 
 	return (
 		<div
 			className={align}
-			style={{ backgroundColor: data.darkVibrant }}
+			style={{ backgroundColor: "gray" }}
 			onClick={() => onBtnClick(Number(game.id))}
 		>
 			<h1>{game.name}</h1>
