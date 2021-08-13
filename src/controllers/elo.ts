@@ -302,7 +302,6 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
 
 	let ids: number[] = req.body.body.ids;
-	console.log(ids);
 	// Save Customer in the database
 
 	const requestsNeeded: number[] = [];
@@ -312,7 +311,6 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 		const response = await Game.findByPk(id);
 		if (!response) {
 			requestsNeeded.push(id);
-			console.log("pushed", id);
 		} else {
 			const output: Elo = response;
 			pending.push(output);
@@ -343,6 +341,8 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 		});
 
 		let formatted: Message = await post;
+
+		console.log("STARTING");
 
 		for (const i of formatted.items.item) {
 			const response = await Game.findByPk(i.$.id);
