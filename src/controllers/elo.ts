@@ -321,8 +321,6 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 
 	const requests = await Promise.all(requestsNeeded);
 
-	console.log(requests.length);
-
 	if (requests.length !== 0) {
 		let result: AxiosResponse = await axios.get(
 			`https://api.geekdo.com/xmlapi2/thing?id=${requests}&stats=1`,
@@ -345,10 +343,10 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 		});
 
 		let formatted: Message = await post;
-		console.log(await formatted);
 
 		for (const i of formatted.items.item) {
 			const response = await Game.findByPk(i.$.id);
+			console.log(response, "HELLO");
 			if (!response) {
 				let output: Elo = {} as Elo;
 				try {
