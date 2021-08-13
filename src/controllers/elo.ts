@@ -300,73 +300,82 @@ const getID = async (req: Request, res: Response, next: NextFunction) => {
 
 const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 	// Validate request
-	let ids: number[] = JSON.parse(req.params.ids);
+
+	let ids: number[] = req.body.body.ids;
+	console.log(ids);
 	// Save Customer in the database
 
-	const map: Promise<Elo>[] = ids.map(async (id) => {
+	const requestsNeeded: number[] = [];
+	const pending: Elo[] = [];
+
+	for (const id of ids) {
 		const response = await Game.findByPk(id);
 		if (!response) {
-			let result: AxiosResponse = await axios.get(
-				`https://api.geekdo.com/xmlapi2/thing?id=${id}&stats=1`,
-				{
-					headers: {
-						Accept: "application/json",
-					},
-				}
-			);
+			requestsNeeded.push(id);
+			console.log("pushed", id);
+		} else {
+			const output: Elo = response;
+			pending.push(output);
+		}
+	}
 
-			let post: any = {};
+	const requests = await Promise.all(requestsNeeded);
 
-			//console.log(result.data);
-			parseString(result.data, (err: Error, result: Object) => {
-				if (err) {
-					throw err;
-				}
+	console.log(requests.length);
 
-				post = result;
-			});
+	if (requests.length !== 0) {
+		let result: AxiosResponse = await axios.get(
+			`https://api.geekdo.com/xmlapi2/thing?id=${requests}&stats=1`,
+			{
+				headers: {
+					Accept: "application/json",
+				},
+			}
+		);
 
-			let formatted: Message = post;
+		let post: any = {};
 
+		//console.log(result.data);
+		parseString(result.data, (err: Error, result: Object) => {
+			if (err) {
+				throw err;
+			}
+
+			post = result;
+		});
+
+		let formatted: Message = await post;
+		console.log(await formatted);
+
+		for (const i of formatted.items.item) {
 			let output: Elo = {} as Elo;
-
 			try {
-				let item: ItemElement = formatted.items.item[0];
-
-				let name: NameElement[] = item.name.filter((e: NameElement) => {
+				let name: NameElement[] = i.name.filter((e: NameElement) => {
 					return e.$.type === "primary";
 				});
 
 				output = {
-					gameID: Number(item.$.id),
+					gameID: Number(i.$.id),
 					ComplexElo: 1000,
 					DepthElo: 1000,
-					thumbnail: item.thumbnail[0],
-					image: item.image[0],
+					thumbnail: i.thumbnail[0],
+					image: i.image[0],
 					name: name[0].$.value,
-					yearpublished: Number(item.yearpublished[0].$.value),
-					rank: Number(item.statistics[0].ratings[0].ranks[0].rank[0].$.value),
-					rating: Number(item.statistics[0].ratings[0].average[0].$.value),
-					weight: Number(
-						item.statistics[0].ratings[0].averageweight[0].$.value
-					),
+					yearpublished: Number(i.yearpublished[0].$.value),
+					rank: Number(i.statistics[0].ratings[0].ranks[0].rank[0].$.value),
+					rating: Number(i.statistics[0].ratings[0].average[0].$.value),
+					weight: Number(i.statistics[0].ratings[0].averageweight[0].$.value),
 				};
 			} catch (TypeError) {
 				res.status(500);
 			}
 
 			const data = await Game.create(output);
-
-			return data as Elo;
-		} else {
-			const output: Elo = response as Elo;
-			return output as Elo;
+			pending.push(output);
 		}
-	});
+	}
 
-	const totals: Elo[] = await Promise.all(map);
-
-	res.send(totals);
+	res.send(pending);
 };
 
 export default { postElo, getAll, getID, updateElo, getIDs };

@@ -314,15 +314,22 @@ function App() {
 			});
 
 			const gamesRes: number[] = await rest.data.message;
-			console.log(gamesRes, "LOG");
 			if (rest.data.message === "404: User not found") {
 				alert("You haven't logged enough games on BGG");
 			} else if (gamesRes.length <= 2) {
 				alert("You haven't logged enough games on BGG");
 			} else {
-				const playedGames = await axios.get(
-					`/api/elo/ids/${JSON.stringify(gamesRes)}`
-				);
+				console.log(gamesRes);
+
+				const data = { ids: gamesRes };
+
+				const playedGames = await axios.post("/api/elo/ids", {
+					body: data,
+					header: {
+						"Content-Type": "application/json",
+						Accept: "application/json",
+					},
+				});
 
 				const results: Elo[] = await playedGames.data;
 
