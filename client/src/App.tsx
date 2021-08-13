@@ -118,7 +118,7 @@ function App() {
 			setUser(userI);
 			setUserID(Number(data.message));
 
-			generateNewGames(userI, WhichGames.Current, null);
+			await generateNewGames(userI, WhichGames.Current, null);
 			generateNewGames(userI, WhichGames.Next, null);
 		} else {
 			setUserValid(false);
