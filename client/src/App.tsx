@@ -430,8 +430,8 @@ function App() {
 					{userValid && (
 						<h2 className="question">
 							{question === Question.Mechanically
-								? "Which game is more mechanically complex?"
-								: "Which game has more depth?"}
+								? "Which game's rules are harder to learn?"
+								: "Which game is harder to master?"}
 						</h2>
 					)}
 					{games !== null && (

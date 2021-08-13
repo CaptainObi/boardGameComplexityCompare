@@ -49,8 +49,8 @@ function DataPage({ page, onButtonClick }: DataPageProps) {
 		{ label: "Rating", name: "rating" },
 		{ label: "Year Published", name: "yearpublished" },
 		{ label: "BGG Weight", name: "weight" },
-		{ label: "Complexity", name: "ComplexElo" },
-		{ label: "Depth", name: "DepthElo" },
+		{ label: "Rules Complexity", name: "ComplexElo" },
+		{ label: "Strategical Depth", name: "DepthElo" },
 	];
 
 	const options: any = {
