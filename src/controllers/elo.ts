@@ -347,32 +347,33 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 		for (const i of formatted.items.item) {
 			const response = await Game.findByPk(i.$.id);
 			console.log(response, "HELLO");
-			if (!response) {
-				let output: Elo = {} as Elo;
-				try {
-					let name: NameElement[] = i.name.filter((e: NameElement) => {
-						return e.$.type === "primary";
-					});
+			let output: Elo = {} as Elo;
+			try {
+				let name: NameElement[] = i.name.filter((e: NameElement) => {
+					return e.$.type === "primary";
+				});
 
-					output = {
-						gameID: Number(i.$.id),
-						ComplexElo: 1000,
-						DepthElo: 1000,
-						thumbnail: i.thumbnail[0],
-						image: i.image[0],
-						name: name[0].$.value,
-						yearpublished: Number(i.yearpublished[0].$.value),
-						rank: Number(i.statistics[0].ratings[0].ranks[0].rank[0].$.value),
-						rating: Number(i.statistics[0].ratings[0].average[0].$.value),
-						weight: Number(i.statistics[0].ratings[0].averageweight[0].$.value),
-					};
-				} catch (TypeError) {
-					res.status(500);
-				}
-
-				const data = await Game.create(output);
-				pending.push(output);
+				output = {
+					gameID: Number(i.$.id),
+					ComplexElo: 1000,
+					DepthElo: 1000,
+					thumbnail: i.thumbnail[0],
+					image: i.image[0],
+					name: name[0].$.value,
+					yearpublished: Number(i.yearpublished[0].$.value),
+					rank: Number(i.statistics[0].ratings[0].ranks[0].rank[0].$.value),
+					rating: Number(i.statistics[0].ratings[0].average[0].$.value),
+					weight: Number(i.statistics[0].ratings[0].averageweight[0].$.value),
+				};
+			} catch (TypeError) {
+				res.status(500);
 			}
+
+			const data = await Game.findOrCreate({
+				where: { gameID: i.$.id },
+				defaults: output,
+			});
+			pending.push(output);
 		}
 	}
 
