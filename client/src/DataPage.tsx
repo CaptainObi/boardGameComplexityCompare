@@ -65,10 +65,12 @@ function DataPage({ page, onButtonClick }: DataPageProps) {
 			const res: AxiosResponse = await axios.get("/api/elo/");
 			const data: Elo[] = await res.data;
 
-			data.filter((e) => e.ComplexElo !== 1000 && e.DepthElo !== 1000);
+			const filter = data.filter(
+				(e) => e.ComplexElo !== 1000 && e.DepthElo !== 1000
+			);
 
 			setRows(
-				data.map((e: Elo) => {
+				filter.map((e: Elo) => {
 					const row: Rows = {
 						Name: String(e.name),
 						rating: e.rating,
