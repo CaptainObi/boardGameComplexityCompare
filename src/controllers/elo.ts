@@ -369,10 +369,7 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 				res.status(500);
 			}
 
-			const data = await Game.findOrCreate({
-				where: { gameID: i.$.id },
-				defaults: output,
-			});
+			const data = await Game.create(output);
 			pending.push(output);
 		}
 	}
