@@ -75,23 +75,16 @@ interface Elo {
 	rating: number;
 }
 
-function shuffle(array: any[]) {
-	var m = array.length,
-		t,
-		i;
-
-	// While there remain elements to shuffle…
-	while (m) {
-		// Pick a remaining element…
-		i = Math.floor(Math.random() * m--);
-
-		// And swap it with the current element.
-		t = array[m];
-		array[m] = array[i];
-		array[i] = t;
-	}
-
-	return array;
+function gaussianRand(): number {
+	let u = 0,
+		v = 0;
+	while (u === 0) u = Math.random(); //Converting [0,1) to (0,1)
+	while (v === 0) v = Math.random();
+	let num = Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+	num = num / 10.0 + 0.5; // Translate to 0 -> 1
+	if ((num - 0.5) * 2 > 1 || (num - 0.5) * 2 < -1 || (num - 0.5) * 2 === 0)
+		return gaussianRand(); // resample between 0 and 1
+	return (num - 0.5) * 2;
 }
 
 function App() {
@@ -112,7 +105,7 @@ function App() {
 		});
 
 		const data: GetUserID = await rest.data;
-		//console.log(data);
+
 		if (Number(rest.status) === 200 || Number(rest.status) === 304) {
 			setUserValid(true);
 			setUser(userI);
@@ -218,8 +211,6 @@ function App() {
 
 			// function to fetch two more games
 
-			//console.log([getGameAElo, getGameBElo]);
-
 			const gameA: Elo = getGameAElo.data;
 			const gameB: Elo = getGameBElo.data;
 
@@ -242,8 +233,6 @@ function App() {
 				return { gameA: newGameA, gameB: newGameB };
 			};
 
-			//console.log(gameA.ComplexElo);
-
 			const complexNewElo = computeNewElo(
 				Number(gameA.ComplexElo),
 				Number(gameB.ComplexElo)
@@ -252,8 +241,6 @@ function App() {
 				Number(gameA.DepthElo),
 				Number(gameB.DepthElo)
 			);
-
-			//console.log(complexNewElo, depthNewElo);
 
 			const newGameA = {
 				gameID: gameA.gameID,
@@ -336,7 +323,7 @@ function App() {
 		if (update === WhichGames.Current && !(nextGames === null)) {
 			setGames(nextGames);
 			// set the game to the current game
-			console.log("updating");
+
 			generateNewGames(userI, WhichGames.Next, nextGames);
 		} else {
 			const rest: AxiosResponse = await axios.get(`/api/user/games/${userI}`, {
@@ -349,8 +336,6 @@ function App() {
 			} else if (gamesRes.length <= 2) {
 				alert("You haven't logged enough games on BGG");
 			} else {
-				console.log(gamesRes);
-
 				const data = { ids: gamesRes };
 
 				const playedGames = await axios.post("/api/elo/ids", {
@@ -369,78 +354,44 @@ function App() {
 					`/api/comparison/${userID}`
 				);
 
-				//console.log(comparisons);
-
 				let combos: number[][] = [[]];
 
 				if (!(comparisons.data === "")) {
-					combos = comparisons.data.map((e: PostWinner) => [e.gameA, e.gameB]);
+					comparisons.data.forEach((e: PostWinner) =>
+						combos.push([e.gameA, e.gameB])
+					);
 				}
 
-				for (let i = 0; i < 1000000000000; i++) {
+				for (let i = 0; i < 10000; i++) {
 					if (i < results.length * 10) {
 						const seed: number = Math.floor(Math.random() * results.length - 1);
-						let secondarySeed: number = Math.floor(Math.random() * 20) - 10;
-						secondarySeed =
-							seed + secondarySeed > results.length - 1
-								? seed + secondarySeed - results.length - 1
-								: secondarySeed;
 
-						if (secondarySeed === 0) {
-							secondarySeed = 1;
+						let secondarySeed: number = Math.floor(
+							seed + results.length * gaussianRand()
+						);
+
+						if (secondarySeed === seed) {
+							secondarySeed++;
+						} else if (secondarySeed >= results.length) {
+							secondarySeed = results.length - 1;
+						} else if (secondarySeed < 0) {
+							secondarySeed = 0;
 						}
 
-						secondarySeed = secondarySeed + seed;
-
-						//console.log(combos, results[i], "hello");
 						const resultGameA: Elo = await results[seed];
 						const resultGameB: Elo = await results[secondarySeed];
 
 						if (
+							typeof resultGameA !== undefined &&
+							typeof resultGameB !== undefined &&
 							(await checkValidity(
 								combos,
 								String(resultGameA.gameID),
 								String(resultGameB.gameID)
-							)) === true &&
-							typeof resultGameA !== undefined &&
-							typeof resultGameB !== undefined
+							)) === true
 						) {
 							fetchGameData(resultGameA.gameID, resultGameB.gameID, update);
 							break;
-						}
-					} else {
-						let preShuffle = [];
-
-						for (let i = 0; i < gamesRes.length - 1; i++) {
-							for (let j = i + 1; j < gamesRes.length; j++) {
-								preShuffle.push([Number(gamesRes[i]), Number(gamesRes[j])]);
-							}
-						}
-
-						const results: any[] = shuffle(preShuffle);
-
-						const comparisons: AxiosResponse = await axios.get(
-							`/api/comparison/${userID}`
-						);
-
-						//console.log(comparisons);
-
-						if (!(comparisons.data === "")) {
-							combos = comparisons.data.map((e: PostWinner) => [
-								e.gameA,
-								e.gameB,
-							]);
-						}
-
-						for (let i in results) {
-							//console.log(combos, results[i], "hello");
-							if (
-								(await checkValidity(combos, results[i][0], results[i][1])) ===
-								true
-							) {
-								fetchGameData(results[i][0], results[i][1], update);
-								break;
-							}
 						}
 					}
 				}

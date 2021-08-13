@@ -19,8 +19,6 @@ function Game({ game, align, onBtnClick }: GameProps) {
 		windowSize: 25,
 	});
 
-	console.log(colors);
-
 	let primary: string;
 	let secondary: string;
 
