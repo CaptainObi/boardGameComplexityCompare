@@ -1,6 +1,7 @@
 import { GameElement } from "../App";
 import "./Game.css";
 import "../App.css";
+import useImageColor from "use-image-color";
 //import { usePalette } from "react-palette";
 
 type GameProps = {
@@ -12,10 +13,14 @@ type GameProps = {
 function Game({ game, align, onBtnClick }: GameProps) {
 	//const { data } = usePalette(game.image);
 
+	const { colors } = useImageColor(game.image, { cors: false });
+
+	console.log(colors);
+
 	return (
 		<div
 			className={align}
-			style={{ backgroundColor: "gray" }}
+			style={{ backgroundColor: colors[1] }}
 			onClick={() => onBtnClick(Number(game.id))}
 		>
 			<h1>{game.name}</h1>
