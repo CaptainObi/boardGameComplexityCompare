@@ -5,6 +5,12 @@ type InputUserProps = {
 	onChangedUser: (user: string) => Promise<void>;
 };
 
+/**
+ * Generates a input box for a user to input their username
+ * @param props {InputUserProps}
+ * @returns
+ */
+
 function InputUser({ onChangedUser }: InputUserProps) {
 	const [text, setText] = useState("");
 

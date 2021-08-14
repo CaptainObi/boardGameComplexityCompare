@@ -25,7 +25,7 @@ const postComparisons = async (
 		});
 	}
 
-	// Create a Customer
+	// create a new comparison
 	const newComparison: ComparisonInterface = {
 		gameA: reqBody.body.gameA,
 		gameB: reqBody.body.gameB,
@@ -40,17 +40,14 @@ const postComparisons = async (
 };
 
 const getAll = async (req: Request, res: Response, next: NextFunction) => {
-	// Validate request
-
-	// Save Customer in the database
+	// gets all the comparisons
 	const response = await Comparison.findAll();
 	res.send(response);
 };
 
 const getID = async (req: Request, res: Response, next: NextFunction) => {
-	// Validate request
+	// gets comparisons for a certain user id
 	let id: string = req.params.id;
-	// Save Customer in the database
 	const response = await Comparison.findAll({ where: { user: id } });
 	res.send(response);
 };

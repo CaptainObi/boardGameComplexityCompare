@@ -9,6 +9,12 @@ type InputsProps = {
 	user: string;
 };
 
+/**
+ * Generates a input panel for users to input their username or change it
+ * @param props {InputsProps}
+ * @returns
+ */
+
 function Inputs({ onChangedUser, userValid, user }: InputsProps) {
 	return (
 		<div className={userValid ? "buttons" : "button"}>

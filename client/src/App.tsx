@@ -62,6 +62,9 @@ export interface GetUserID {
 	message: string;
 }
 
+// just a quick note, you might be wondering why I have two simmilar interfaces with Elo and GameElement.
+// GameElement is designed to be used with data fetched directly from BGG without being retrived from the database.
+// Elo is designed for games that have been fetched from the database.
 interface Elo {
 	gameID: number;
 	ComplexElo: number;
@@ -75,6 +78,10 @@ interface Elo {
 	rating: number;
 }
 
+/**
+ * generates random number between -1 and 1 using a modified Gaussian Distribution
+ * @returns {number} between -1 and 1 inclusive.
+ */
 function gaussianRand(): number {
 	let u = 0,
 		v = 0;
@@ -87,7 +94,12 @@ function gaussianRand(): number {
 	return (num - 0.5) * 2;
 }
 
+/**
+ * Main function for the app.
+ * @returns
+ */
 function App() {
+	// creates useState hooks for all the varibles that are needed
 	const [user, setUser] = useState("");
 	const [userID, setUserID] = useState(0);
 	const [userValid, setUserValid] = useState(false);
@@ -97,20 +109,28 @@ function App() {
 	const [nextGames, setNextGames] = useState<Games | null>(null);
 	const [page, setPage] = useState<Page>(Page.Main);
 
+	/**
+	 * handles the things that need to be done when a username is inputed into the system
+	 * @param userI {string} name of the user
+	 */
 	const handleChangedUser = async (userI: string) => {
-		//const rest: Response = await fetch(`/api/user/${user}`);
-
+		// fetches the userID of the user and checks if it exists
 		const rest: AxiosResponse = await axios.get(`/api/user/${userI}`, {
 			validateStatus: (status: number) => status === 404 || status === 200,
 		});
 
 		const data: GetUserID = await rest.data;
 
+		// if it exists, it will set the user as valid, set the username and userID and then generate the games for the user to pick
+		// if it doesn't exist it will promt the user to try again.
+
 		if (Number(rest.status) === 200 || Number(rest.status) === 304) {
+			// sets the user
 			setUserValid(true);
 			setUser(userI);
 			setUserID(Number(data.message));
 
+			// generates the new games
 			await generateNewGames(userI, WhichGames.Current, null);
 			generateNewGames(userI, WhichGames.Next, null);
 		} else {
@@ -118,19 +138,36 @@ function App() {
 		}
 	};
 
+	/**
+	 * handles what to do when a game is clicked
+	 * @param winner {number} the number of the game that won
+	 */
 	const handleGameClick = async (winner: number) => {
+		// checks to see what part of the matchup the game has won.
+		// If its mech then it just proceeds to the next question
+		// else it logs the full comparison and resets the process
+
 		if (question === Question.Mechanically) {
+			// logs the winner
 			setMechanically(winner);
+			// changes the question
 			setQuestion(Question.Depth);
 		} else {
+			// sends the full comparison result to be logs and elos to be changed
 			handleChoice(
 				{ winnerDepth: winner, winnerMechanically: mechanically },
 				false
 			);
+			// resets the question
 			setQuestion(Question.Mechanically);
 		}
 	};
 
+	/**
+	 * Sends the winner of the game to the backend and updates the elos of each game.
+	 * @param winners {Choice} an object of the winners of each question
+	 * @param skip {boolean} whether or not the function was triggered by clicking the 'skip' button
+	 */
 	const handleChoice = async (winners: Choice, skip: boolean) => {
 		const getGameA: AxiosResponse = await axios.get(
 			`/api/elo/${games?.gameA.id}`
@@ -139,41 +176,16 @@ function App() {
 			`/api/elo/${games?.gameB.id}`
 		);
 
+		// fetches the data regarding each game, if the game doesn't exist it creates it.
+
 		if (getGameA.data.length === 0) {
-			const newGame: Elo = {
-				gameID: Number(games?.gameA.id),
-				ComplexElo: 1000,
-				DepthElo: 1000,
-				thumbnail: String(games?.gameA.thumbnail),
-				image: String(games?.gameA.image),
-				name: String(games?.gameA.name),
-				yearpublished: Number(games?.gameA.yearpublished),
-				rank: Number(games?.gameA.yearpublished),
-				weight: Number(games?.gameA.weight),
-				rating: Number(games?.gameA.rating),
-			};
-			await axios.post("/api/elo/", {
-				body: newGame,
-			});
+			await createElo(games?.gameA);
 		}
 		if (getGameB.data.length === 0) {
-			const newGame: Elo = {
-				gameID: Number(games?.gameB.id),
-				ComplexElo: 1000,
-				DepthElo: 1000,
-				thumbnail: String(games?.gameB.thumbnail),
-				image: String(games?.gameB.image),
-				name: String(games?.gameB.name),
-				yearpublished: Number(games?.gameB.yearpublished),
-				rank: Number(games?.gameB.yearpublished),
-				weight: Number(games?.gameB.weight),
-				rating: Number(games?.gameB.rating),
-			};
-			await axios.post("/api/elo/", {
-				body: newGame,
-			});
+			await createElo(games?.gameB);
 		}
 
+		// this creates the comparison in the database
 		let data;
 
 		if (skip === false) {
@@ -200,6 +212,8 @@ function App() {
 			},
 		});
 
+		// if the user hasn't skipped the question it updates the elos
+
 		if (skip === false) {
 			// retrive ELOS and save
 			const getGameAElo: AxiosResponse = await axios.get(
@@ -209,11 +223,17 @@ function App() {
 				`/api/elo/${games?.gameB.id}`
 			);
 
-			// function to fetch two more games
+			// fetches the two games frmo the database
 
 			const gameA: Elo = getGameAElo.data;
 			const gameB: Elo = getGameBElo.data;
 
+			/**
+			 * calculates the new elos for the games
+			 * @param AElo {number} elo for A
+			 * @param BElo {number} elo for b
+			 * @returns {object} containing the objects with the new elos
+			 */
 			const computeNewElo = (AElo: number, BElo: number) => {
 				const expectedScoreA: number = elo.getExpected(AElo, BElo);
 
@@ -233,6 +253,8 @@ function App() {
 				return { gameA: newGameA, gameB: newGameB };
 			};
 
+			// does this both for complexity and for depth
+
 			const complexNewElo = computeNewElo(
 				Number(gameA.ComplexElo),
 				Number(gameB.ComplexElo)
@@ -241,6 +263,8 @@ function App() {
 				Number(gameA.DepthElo),
 				Number(gameB.DepthElo)
 			);
+
+			// creates new objects and updates them with the database.
 
 			const newGameA = {
 				gameID: gameA.gameID,
@@ -261,12 +285,42 @@ function App() {
 				body: newGameB,
 			});
 		} else {
+			// if it skips it doesn't update anything and just moves on
 			setQuestion(Question.Mechanically);
 		}
 
+		// creates new games
 		generateNewGames(user, WhichGames.Current, games);
 	};
 
+	/**
+	 * creates new elos
+	 * @param gameElementName {GameElement} for the games you want to create
+	 */
+	const createElo = async (gameElementName: GameElement | undefined) => {
+		const newGame: Elo = {
+			gameID: Number(gameElementName?.id),
+			ComplexElo: 1000,
+			DepthElo: 1000,
+			thumbnail: String(gameElementName?.thumbnail),
+			image: String(gameElementName?.image),
+			name: String(gameElementName?.name),
+			yearpublished: Number(gameElementName?.yearpublished),
+			rank: Number(gameElementName?.yearpublished),
+			weight: Number(gameElementName?.weight),
+			rating: Number(gameElementName?.rating),
+		};
+		await axios.post("/api/elo/", {
+			body: newGame,
+		});
+	};
+
+	/**
+	 * fetches the data about the games and saves them into the useState
+	 * @param gameA {number} first game
+	 * @param gameB {number} second game
+	 * @param update {WhichGames} enum that determins if it updates the current games or the next game
+	 */
 	const fetchGameData = async (
 		gameA: number,
 		gameB: number,
@@ -285,6 +339,13 @@ function App() {
 		}
 	};
 
+	/**
+	 * checks the validity of a given pair of games
+	 * @param combos the combinations of the comparisons a user has done
+	 * @param resultA first id
+	 * @param resultB second id
+	 * @returns {boolean} whether the comination is okay to use or not
+	 */
 	const checkValidity = async (
 		combos: number[][],
 		resultA: string,
@@ -315,27 +376,41 @@ function App() {
 		}
 	};
 
+	/**
+	 * Generates the new games for the software
+	 * @param userI {string} name of the user
+	 * @param update {WhichGames} enum that contains which game to update
+	 * @param currentGames {Games} that contains the current games because react use state isn't always the fastest
+	 */
 	const generateNewGames = async (
 		userI: string,
 		update: WhichGames,
 		currentGames: Games | null
 	) => {
+		// if its been asked to generate the current game and the next game has been generated
 		if (update === WhichGames.Current && !(nextGames === null)) {
 			setGames(nextGames);
 			// set the game to the current game
 
+			// generates the next game
 			generateNewGames(userI, WhichGames.Next, nextGames);
 		} else {
+			// checks how many games the user has logged on bgg and retrives it
+
 			const rest: AxiosResponse = await axios.get(`/api/user/games/${userI}`, {
 				validateStatus: (status: number) => status === 404 || status === 200,
 			});
 
 			const gamesRes: number[] = await rest.data.message;
+
+			// checks that everything is valid
+
 			if (rest.data.message === "404: User not found") {
 				alert("You haven't logged enough games on BGG");
 			} else if (gamesRes.length <= 2) {
 				alert("You haven't logged enough games on BGG");
 			} else {
+				// fetches the game data for all the games the user has played
 				const data = { ids: gamesRes };
 
 				const playedGames = await axios.post("/api/elo/ids", {
@@ -348,8 +423,11 @@ function App() {
 
 				const results: Elo[] = await playedGames.data;
 
+				// sorts the data based on its elo
+
 				results.sort((a, b) => a.ComplexElo - b.ComplexElo);
 
+				// fetches the list of comparisons the user has already done
 				const comparisons: AxiosResponse = await axios.get(
 					`/api/comparison/${userID}`
 				);
@@ -362,43 +440,54 @@ function App() {
 					);
 				}
 
+				// timeout so it just doesn't get stuck to infinity
+
 				for (let i = 0; i < 10000; i++) {
-					if (i < results.length * 10) {
-						const seed: number = Math.floor(Math.random() * results.length - 1);
+					// generates a random seed for the first number
+					const seed: number = Math.floor(Math.random() * results.length - 1);
 
-						let secondarySeed: number = Math.floor(
-							seed + results.length * gaussianRand()
-						);
+					// generates a second seed based on a normal distrubtion with the first number as the mean.
+					let secondarySeed: number = Math.floor(
+						seed + results.length * gaussianRand()
+					);
 
-						if (secondarySeed === seed) {
-							secondarySeed++;
-						} else if (secondarySeed >= results.length) {
-							secondarySeed = results.length - 1;
-						} else if (secondarySeed < 0) {
-							secondarySeed = 0;
-						}
+					// makes sure the number isn't over or under the array's indexes.
+					// Also makes sure you are never comparing a game to itself
 
-						const resultGameA: Elo = await results[seed];
-						const resultGameB: Elo = await results[secondarySeed];
+					if (secondarySeed === seed) {
+						secondarySeed++;
+					} else if (secondarySeed >= results.length) {
+						secondarySeed = results.length - 1;
+					} else if (secondarySeed < 0) {
+						secondarySeed = 0;
+					}
 
-						if (
-							typeof resultGameA !== undefined &&
-							typeof resultGameB !== undefined &&
-							(await checkValidity(
-								combos,
-								String(resultGameA.gameID),
-								String(resultGameB.gameID)
-							)) === true
-						) {
-							fetchGameData(resultGameA.gameID, resultGameB.gameID, update);
-							break;
-						}
+					// fetches the games with those seeds
+
+					const resultGameA: Elo = await results[seed];
+					const resultGameB: Elo = await results[secondarySeed];
+
+					// validates the games, and if they are valid it fetches the proper data and sends them off to the user, if not it continues
+					if (
+						typeof resultGameA !== undefined &&
+						typeof resultGameB !== undefined &&
+						(await checkValidity(
+							combos,
+							String(resultGameA.gameID),
+							String(resultGameB.gameID)
+						)) === true
+					) {
+						fetchGameData(resultGameA.gameID, resultGameB.gameID, update);
+						break;
 					}
 				}
 			}
 		}
 	};
 
+	/**
+	 * handles if the user clicks the buttons to change a page
+	 */
 	const handlePageChange = () => {
 		if (page === Page.Main) {
 			setPage(Page.Data);
@@ -411,7 +500,7 @@ function App() {
 		<div>
 			{page === Page.Main ? (
 				<main className="div">
-					<Header page={page} onButtonClick={handlePageChange} />
+					<Header page={page} onPageChange={handlePageChange} />
 					<Inputs
 						user={user}
 						onChangedUser={handleChangedUser}
@@ -452,7 +541,7 @@ function App() {
 					)}
 				</main>
 			) : (
-				<DataPage page={page} onButtonClick={handlePageChange} />
+				<DataPage page={page} onPageChange={handlePageChange} />
 			)}
 		</div>
 	);

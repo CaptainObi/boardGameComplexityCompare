@@ -1,9 +1,9 @@
+import React from "react";
 import { GameElement } from "../App";
 import { Image } from "use-image-color";
 import "./Game.css";
 import "../App.css";
 import useImageColor from "use-image-color";
-//import { usePalette } from "react-palette";
 
 type GameProps = {
 	game: GameElement;
@@ -11,8 +11,14 @@ type GameProps = {
 	onBtnClick: (winner: number) => void;
 };
 
+/**
+ * Generates a view for the game, it features clickable buttons and automatic colouring
+ * @param props {GameProps}
+ * @returns
+ */
+
 function Game({ game, align, onBtnClick }: GameProps) {
-	//const { data } = usePalette(game.image);
+	// gets the dominant colours from the image
 	const { colors } = useImageColor(game.image, {
 		cors: false,
 		format: "hex",
@@ -22,6 +28,7 @@ function Game({ game, align, onBtnClick }: GameProps) {
 	let primary: string;
 	let secondary: string;
 
+	// if they have been retrived yet it sets them as that, otherwise it just sets the colours as black and gray
 	try {
 		primary = colors[0];
 		secondary = colors[1];

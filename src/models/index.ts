@@ -1,5 +1,7 @@
 import { Sequelize, Model, DataTypes } from "sequelize";
 
+// generates the connection string
+
 const devConfig: string = `postgresql://${
 	process.env.POSTGRES_USER || "node"
 }:${process.env.POSTGRES_PASSWORD || "password"}@${
@@ -14,6 +16,7 @@ console.log(devConfig);
 
 const result: string =
 	process.env.NODE_ENV === "production" ? proConfig : (devConfig as string);
+
 // Create a connection to the database
 if (process.env.NODE_ENV === "production") {
 	var sequelize = new Sequelize(result, {
@@ -38,6 +41,8 @@ try {
 } catch (error) {
 	console.log(error);
 }
+
+// creates the models for everything
 
 class Game extends Model {
 	public gameID!: number;
@@ -66,6 +71,8 @@ class Comparison extends Model {
 	public readonly createdAt!: Date;
 	public readonly updatedAt!: Date;
 }
+
+// inits
 
 Game.init(
 	{
@@ -130,6 +137,8 @@ Comparison.init(
 	{ sequelize, tableName: "compare" }
 );
 
+// generates the relationships
+
 Game.hasMany(Comparison, { sourceKey: "gameID", foreignKey: "gameA" });
 Game.hasMany(Comparison, { sourceKey: "gameID", foreignKey: "gameB" });
 Game.hasMany(Comparison, {
@@ -138,20 +147,7 @@ Game.hasMany(Comparison, {
 });
 Game.hasMany(Comparison, { sourceKey: "gameID", foreignKey: "WinnerDepth" });
 
+// syncs
 sequelize.sync();
-/*ID SERIAL,
-            gameA integer NOT NULL,
-            gameB integer NOT NULL,
-            WinnerMechanically integer DEFAULT null,
-            WinnerDepth integer DEFAULT null,
-            "user" integer NOT NULL});
-			
-			
-			
-			
-			gameID SERIAL,
-  ComplexElo INT NOT NULL,
-  DepthElo INT NOT NULL,
-  PRIMARY KEY (gameID)*/
 
 export { Game, Comparison };

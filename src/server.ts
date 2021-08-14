@@ -7,7 +7,6 @@ import gameRoutes from "./routes/game";
 import comparisonRoutes from "./routes/comparison";
 import eloRoutes from "./routes/elo";
 const router: Express = express();
-import path from "path";
 
 /** Logging */
 router.use(morgan("dev"));
@@ -17,14 +16,11 @@ router.use(express.urlencoded({ extended: false }));
 router.use(express.json());
 
 if (process.env.NODE_ENV === "production") {
-	//server static content
-	//npm run build
+	// server static content
+	// for the react FE
 	router.use(express.static("/app/client/build"));
-	console.log("/app/client/build");
-	console.log("ello");
 }
 
-/** RULES OF OUR API */
 router.use((req, res, next) => {
 	// set the CORS policy
 	res.header("Access-Control-Allow-Origin", "*");
@@ -52,9 +48,11 @@ router.use("/api/*", (req, res, next) => {
 	});
 });
 
+// serves up front end
 router.use("/", (req, res) => {
 	res.sendFile("/app/client/build/index.html");
 });
+
 /** Error handling */
 router.use((req, res, next) => {
 	const error = new Error("not found");

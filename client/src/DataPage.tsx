@@ -30,10 +30,16 @@ interface Rows {
 
 type DataPageProps = {
 	page: Page;
-	onButtonClick: () => void;
+	onPageChange: () => void;
 };
 
-function DataPage({ page, onButtonClick }: DataPageProps) {
+/**
+ * Creates the datapage to display all the data
+ * @param props {DataPageProps} props that contain which page it is for the header and what to do when the page is changed
+ * @returns
+ */
+function DataPage({ page, onPageChange }: DataPageProps) {
+	// uses useState for rowss, just with a default loading row
 	const [rows, setRows] = useState<Rows[]>([
 		{
 			Name: "LOADING",
@@ -44,6 +50,8 @@ function DataPage({ page, onButtonClick }: DataPageProps) {
 			DepthElo: 0,
 		},
 	]);
+
+	// columns with labels to make it easier to understand
 	const columns = [
 		{ label: "Name", name: "Name" },
 		{ label: "Rating", name: "rating" },
@@ -53,6 +61,7 @@ function DataPage({ page, onButtonClick }: DataPageProps) {
 		{ label: "Strategical Depth", name: "DepthElo" },
 	];
 
+	// turns off datafiltering and selecting rows.
 	const options: any = {
 		filterType: "checkbox",
 		filter: "false",
@@ -62,13 +71,16 @@ function DataPage({ page, onButtonClick }: DataPageProps) {
 
 	useEffect(() => {
 		const getRows = async () => {
+			// gets all the games
 			const res: AxiosResponse = await axios.get("/api/elo/");
 			const data: Elo[] = await res.data;
 
+			// filters out any that haven't been compared yet
 			const filter = data.filter(
 				(e) => e.ComplexElo !== 1000 && e.DepthElo !== 1000
 			);
 
+			// maps them to rows
 			setRows(
 				filter.map((e: Elo) => {
 					const row: Rows = {
@@ -82,39 +94,13 @@ function DataPage({ page, onButtonClick }: DataPageProps) {
 					return row;
 				})
 			);
-
-			/*
-			//create a promise for each API call
-			
-
-			
-			const newData: object[] = data.map(async (e: Elo) => {
-				const res: Response = await fetch(
-					`/api/game/${e.gameID}`
-				);
-				const data: GameRes = await res.json();
-				const name: string = data.message.name;
-
-				const newComplexElo: number = e.ComplexElo;
-				const newDepthElo: number = e.DepthElo;
-
-				setRows(
-					rows.map((row) =>
-						row.userID === id ? { ...rows, gameID: name } : row
-					)
-				);
-			});*/
-
-			//console.log(newData);
-
-			//setRows(newData);
 		};
 		getRows();
 	}, []);
 	return (
 		<div className="main">
 			<div className="header">
-				<Header page={page} onButtonClick={onButtonClick} />
+				<Header page={page} onPageChange={onPageChange} />
 			</div>
 			<div className="table">
 				<MUIDataTable

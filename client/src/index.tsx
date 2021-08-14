@@ -3,13 +3,11 @@ import ReactDOM from "react-dom";
 import "./index.css";
 import { Route, BrowserRouter } from "react-router-dom";
 import App from "./App";
-import DataPage from "./DataPage";
 
 const routes = (
 	<BrowserRouter>
 		<div>
 			<Route exact path="/" component={App} />
-			<Route path="/dataP" component={DataPage} />
 		</div>
 	</BrowserRouter>
 );

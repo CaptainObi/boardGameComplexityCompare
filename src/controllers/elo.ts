@@ -2,8 +2,8 @@ import { Request, Response, NextFunction } from "express";
 import { Game } from "../models/index";
 import axios, { AxiosResponse } from "axios";
 import { parseString } from "xml2js";
-import game from "./game";
 
+// all of these interfaces are to deal with BGG's infurating API.
 interface Elo {
 	gameID: number;
 	ComplexElo: number;
@@ -171,7 +171,7 @@ export interface Rank {
 }
 
 const postElo = async (req: Request, res: Response, next: NextFunction) => {
-	// Validate request
+	// creates an elo
 	try {
 		const reqBody: any = req.body;
 
@@ -214,14 +214,14 @@ const updateElo = async (req: Request, res: Response, next: NextFunction) => {
 		});
 	}
 
-	// Create a Customer
+	// creates the elo
 	const newGame = {
 		gameID: reqBody.body.gameID,
 		ComplexElo: reqBody.body.ComplexElo,
 		DepthElo: reqBody.body.DepthElo,
 	};
 
-	// Save Customer in the database
+	// updates the elo
 	const response = await Game.update(newGame, {
 		returning: true,
 		where: { gameID: newGame.gameID },
@@ -230,19 +230,17 @@ const updateElo = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getAll = async (req: Request, res: Response, next: NextFunction) => {
-	// Validate request
-
-	// Save Customer in the database
+	// gets all the elos
 	const response = await Game.findAll();
 	res.send(response);
 };
 
 const getID = async (req: Request, res: Response, next: NextFunction) => {
-	// Validate request
+	// gets the elos for a certain id
 	let id: string = req.params.id;
-	// Save Customer in the database
 	const response = await Game.findByPk(id);
 	if (!response) {
+		// if it doesnt exist it creates it
 		let result: AxiosResponse = await axios.get(
 			`https://api.geekdo.com/xmlapi2/thing?id=${id}&stats=1`,
 			{
@@ -299,14 +297,14 @@ const getID = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getIDs = async (req: Request, res: Response, next: NextFunction) => {
-	// Validate request
+	// fetches elos from a array
 
 	let ids: number[] = req.body.body.ids;
-	// Save Customer in the database
 
 	const requestsNeeded: number[] = [];
 	const pending: Elo[] = [];
 
+	// sorts the ids with which ones need to have BGG requests
 	for (const id of ids) {
 		const response = await Game.findByPk(id);
 		if (!response) {
@@ -319,6 +317,7 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 
 	const requests = await Promise.all(requestsNeeded);
 
+	// sends all the BGG requests in one go
 	if (requests.length !== 0) {
 		let result: AxiosResponse = await axios.get(
 			`https://api.geekdo.com/xmlapi2/thing?id=${requests}&stats=1`,
@@ -342,12 +341,12 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 
 		let formatted: Message = await post;
 
-		console.log("STARTING");
+		// processes the requests into saveable objects
 
 		for (const i of formatted.items.item) {
 			const response = await Game.findByPk(i.$.id);
-			console.log(response, "HELLO");
 			let output: Elo = {} as Elo;
+			// creates the object for the elo
 			try {
 				let name: NameElement[] = i.name.filter((e: NameElement) => {
 					return e.$.type === "primary";
@@ -369,11 +368,18 @@ const getIDs = async (req: Request, res: Response, next: NextFunction) => {
 				res.status(500);
 			}
 
-			const data = await Game.create(output);
+			// tries to create the object, there can be edit conflicts? sometimes
+			try {
+				const data = Game.create(output);
+			} catch (error) {
+				console.log(error);
+			}
+			// pushes it onto the output
 			pending.push(output);
 		}
 	}
 
+	// sends the output
 	res.send(pending);
 };
 
