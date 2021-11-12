@@ -1,25 +1,17 @@
-import React from "react";
 import "./App.css";
 import Header from "./components/Header";
 import Inputs from "./components/Inputs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Game from "./components/Game";
 import axios, { AxiosResponse } from "axios";
 import EloRank from "elo-rank";
-import DataPage from "./DataPage";
+import DataPage from "./components/DataPage";
+import { Elo } from "./interfaces/Elo";
+import { GameElement } from "./interfaces/GameElement";
+import Skip from "./components/Skip";
+import useLocalStorage from "./useLocalStorage";
 
 const elo = new EloRank(24);
-
-export interface GameElement {
-	id: string;
-	thumbnail: string;
-	image: string;
-	name: string;
-	yearpublished: number;
-	rank: number;
-	weight: number;
-	rating: number;
-}
 
 enum Question {
 	Mechanically = "mechanically",
@@ -34,6 +26,20 @@ enum WhichGames {
 export enum Page {
 	Main = "main",
 	Data = "data",
+}
+
+export enum Options {
+	prevowned = "prevowned",
+	own = "own",
+	played = "played",
+	rated = "rated",
+}
+
+export interface FetchGameOptions {
+	prevowned: boolean;
+	own: boolean;
+	played: boolean;
+	rated: boolean;
 }
 
 interface PostWinner {
@@ -65,18 +71,6 @@ export interface GetUserID {
 // just a quick note, you might be wondering why I have two simmilar interfaces with Elo and GameElement.
 // GameElement is designed to be used with data fetched directly from BGG without being retrived from the database.
 // Elo is designed for games that have been fetched from the database.
-interface Elo {
-	gameID: number;
-	ComplexElo: number;
-	DepthElo: number;
-	thumbnail: string | null;
-	image: string | null;
-	name: string | null;
-	yearpublished: number;
-	rank: number;
-	weight: number;
-	rating: number;
-}
 
 /**
  * generates random number between -1 and 1 using a modified Gaussian Distribution
@@ -108,12 +102,23 @@ function App() {
 	const [mechanically, setMechanically] = useState(0);
 	const [nextGames, setNextGames] = useState<Games | null>(null);
 	const [page, setPage] = useState<Page>(Page.Main);
+	const [played, setPlayed] = useState<number[]>([]);
+	const [settings, setSettings] = useLocalStorage<FetchGameOptions>(
+		"settings",
+		{
+			rated: false,
+			own: false,
+			played: true,
+			prevowned: false,
+		}
+	);
 
 	/**
 	 * handles the things that need to be done when a username is inputed into the system
 	 * @param userI {string} name of the user
 	 */
 	const handleChangedUser = async (userI: string) => {
+		setPlayed([]);
 		// fetches the userID of the user and checks if it exists
 		const rest: AxiosResponse = await axios.get(`/api/user/${userI}`, {
 			validateStatus: (status: number) => status === 404 || status === 200,
@@ -126,16 +131,25 @@ function App() {
 
 		if (Number(rest.status) === 200 || Number(rest.status) === 304) {
 			// sets the user
+			localStorage.setItem("user", userI);
 			setUserValid(true);
 			setUser(userI);
 			setUserID(Number(data.message));
 
 			// generates the new games
-			await generateNewGames(userI, WhichGames.Current, null);
-			generateNewGames(userI, WhichGames.Next, null);
+			await generateNewGames(userI, WhichGames.Current, []);
+			setTimeout(() => generateNewGames(userI, WhichGames.Next, []), 500);
 		} else {
 			setUserValid(false);
 		}
+	};
+
+	const handleSettings = async (setting: Options, target: boolean) => {
+		const copySetting: FetchGameOptions = { ...settings };
+		copySetting[setting] = target;
+		setSettings(copySetting);
+		localStorage.setItem("settings", JSON.stringify(copySetting));
+		setUserValid(false);
 	};
 
 	/**
@@ -290,7 +304,7 @@ function App() {
 		}
 
 		// creates new games
-		generateNewGames(user, WhichGames.Current, games);
+		generateNewGames(user, WhichGames.Current, played);
 	};
 
 	/**
@@ -346,18 +360,20 @@ function App() {
 	 * @param resultB second id
 	 * @returns {boolean} whether the comination is okay to use or not
 	 */
-	const checkValidity = async (
+	const checkValidity = (
 		combos: number[][],
 		resultA: string,
 		resultB: string
-	) => {
-		const a: string = JSON.stringify(combos);
-		const b: string = JSON.stringify([resultA, resultB]);
-		const c: string = JSON.stringify([resultB, resultA]);
+	): boolean => {
+		//const a: string = JSON.stringify(combos);
+		//const b: string = JSON.stringify([resultA, resultB]);
+		//const c: string = JSON.stringify([resultB, resultA]);
 
-		if (a.indexOf(b) !== -1) {
+		if (combos.includes([Number(resultA), Number(resultB)])) {
 			return false;
-		} else if (a.indexOf(c) !== -1) {
+		} else if (combos.includes([Number(resultB), Number(resultA)])) {
+			return false;
+		} else if (resultA === resultB) {
 			return false;
 		} else if (
 			[resultA, resultB] === [games?.gameA.id, games?.gameB.id] ||
@@ -380,12 +396,12 @@ function App() {
 	 * Generates the new games for the software
 	 * @param userI {string} name of the user
 	 * @param update {WhichGames} enum that contains which game to update
-	 * @param currentGames {Games} that contains the current games because react use state isn't always the fastest
+	 * @param playedArray
 	 */
 	const generateNewGames = async (
 		userI: string,
 		update: WhichGames,
-		currentGames: Games | null
+		playedArray: number[]
 	) => {
 		// if its been asked to generate the current game and the next game has been generated
 		if (update === WhichGames.Current && !(nextGames === null)) {
@@ -393,21 +409,35 @@ function App() {
 			// set the game to the current game
 
 			// generates the next game
-			generateNewGames(userI, WhichGames.Next, nextGames);
+			generateNewGames(userI, WhichGames.Next, playedArray);
 		} else {
 			// checks how many games the user has logged on bgg and retrives it
 
-			const rest: AxiosResponse = await axios.get(`/api/user/games/${userI}`, {
-				validateStatus: (status: number) => status === 404 || status === 200,
-			});
+			let playedFetch;
 
-			const gamesRes: number[] = await rest.data.message;
+			if (playedArray.length === 0) {
+				const body: FetchGameOptions = settings;
+
+				const rest: AxiosResponse = await axios.post(
+					`/api/user/games/${userI}`,
+					{
+						body: body,
+						validateStatus: (status: number) =>
+							status === 404 || status === 200,
+					}
+				);
+
+				if (rest.data.message !== "404 User not found") {
+					setPlayed(rest.data.message);
+					playedFetch = rest.data.message;
+				}
+			}
+
+			const gamesRes: number[] =
+				playedArray.length === 0 ? playedFetch : playedArray;
 
 			// checks that everything is valid
-
-			if (rest.data.message === "404: User not found") {
-				alert("You haven't logged enough games on BGG");
-			} else if (gamesRes.length <= 2) {
+			if (gamesRes.length <= 2) {
 				alert("You haven't logged enough games on BGG");
 			} else {
 				// fetches the game data for all the games the user has played
@@ -447,8 +477,8 @@ function App() {
 					const seed: number = Math.floor(Math.random() * results.length - 1);
 
 					// generates a second seed based on a normal distrubtion with the first number as the mean.
-					let secondarySeed: number = Math.floor(
-						seed + results.length * gaussianRand()
+					let secondarySeed: number = Math.abs(
+						Math.floor(seed + results.length * gaussianRand())
 					);
 
 					// makes sure the number isn't over or under the array's indexes.
@@ -456,10 +486,13 @@ function App() {
 
 					if (secondarySeed === seed) {
 						secondarySeed++;
+					} else if (
+						secondarySeed >= results.length &&
+						seed === results.length - 1
+					) {
+						secondarySeed = results.length - 2;
 					} else if (secondarySeed >= results.length) {
 						secondarySeed = results.length - 1;
-					} else if (secondarySeed < 0) {
-						secondarySeed = 0;
 					}
 
 					// fetches the games with those seeds
@@ -468,17 +501,21 @@ function App() {
 					const resultGameB: Elo = await results[secondarySeed];
 
 					// validates the games, and if they are valid it fetches the proper data and sends them off to the user, if not it continues
-					if (
-						typeof resultGameA !== undefined &&
-						typeof resultGameB !== undefined &&
-						(await checkValidity(
-							combos,
-							String(resultGameA.gameID),
-							String(resultGameB.gameID)
-						)) === true
-					) {
-						fetchGameData(resultGameA.gameID, resultGameB.gameID, update);
-						break;
+					try {
+						if (
+							typeof resultGameA !== undefined &&
+							typeof resultGameB !== undefined &&
+							(await checkValidity(
+								combos,
+								String(resultGameA.gameID),
+								String(resultGameB.gameID)
+							)) === true
+						) {
+							fetchGameData(resultGameA.gameID, resultGameB.gameID, update);
+							break;
+						}
+					} catch (TypeError) {
+						continue;
 					}
 				}
 			}
@@ -496,26 +533,52 @@ function App() {
 		}
 	};
 
+	useEffect(() => {
+		const settings = localStorage.getItem("settings");
+		if (settings) {
+			const foundSettings = JSON.parse(settings);
+			setSettings(foundSettings);
+		}
+
+		const loggedInUser = localStorage.getItem("user");
+		if (loggedInUser) {
+			const foundUser = loggedInUser;
+			handleChangedUser(foundUser);
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+
+	const handleArrowKeys = (key: string) => {
+		if (userValid) {
+			if (key === "a") {
+				console.log(games?.gameA.id);
+				handleGameClick(Number(games?.gameB.id));
+			} else if (key === "d") {
+				console.log(games?.gameA.id);
+				handleGameClick(Number(games?.gameA.id));
+			} else if (key === "s" || key === "w") {
+				handleChoice({ winnerDepth: 0, winnerMechanically: 0 }, true);
+			}
+		}
+	};
+
 	return (
 		<div>
 			{page === Page.Main ? (
-				<main className="div">
+				<main
+					className="div"
+					onKeyPress={(e) => handleArrowKeys(e.key)}
+					tabIndex={1}
+				>
 					<Header page={page} onPageChange={handlePageChange} />
 					<Inputs
 						user={user}
 						onChangedUser={handleChangedUser}
 						userValid={userValid}
+						onChangedSettings={handleSettings}
+						settings={settings}
 					/>
-					{userValid && (
-						<button
-							onClick={() =>
-								handleChoice({ winnerDepth: 0, winnerMechanically: 0 }, true)
-							}
-							className="skip"
-						>
-							Skip
-						</button>
-					)}
+					{userValid && <Skip onSkip={handleChoice} />}
 					{userValid && (
 						<h2 className="question">
 							{question === Question.Mechanically

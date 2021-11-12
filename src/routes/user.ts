@@ -4,6 +4,6 @@ import controller from "../controllers/user";
 const router = express.Router();
 
 router.get("/:id", controller.getUserID);
-router.get("/games/:id", controller.getUserPlays);
+router.post("/games/:id", controller.getUserPlays);
 
 export = router;

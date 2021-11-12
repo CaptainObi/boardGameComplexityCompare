@@ -1,83 +1,11 @@
 /** src/controllers/posts.ts */
-import { Request, Response, NextFunction } from "express";
+import e, { Request, Response, NextFunction } from "express";
 import axios, { AxiosResponse } from "axios";
 import { parseString } from "xml2js";
+import { Collection } from "../interfaces/Collection";
+import { Plays, PlayElement } from "../interfaces/Plays";
 
-interface Post {
-	userId: Number;
-	id: Number;
-	title: String;
-	body: String;
-}
-
-export interface Plays {
-	plays: PlaysClass;
-}
-
-export interface PlaysClass {
-	$: Purple;
-	play: PlayElement[];
-}
-
-export interface Purple {
-	username: string;
-	userid: string;
-	total: string;
-	page: string;
-	termsofuse: string;
-}
-
-export interface PlayElement {
-	$: Play;
-	item: ItemElement[];
-	comments?: string[];
-}
-
-export interface Play {
-	id: string;
-	date: string;
-	quantity: string;
-	length: string;
-	incomplete: string;
-	nowinstats: string;
-	location: string;
-}
-
-export interface ItemElement {
-	$: Item;
-	subtypes: ItemSubtype[];
-}
-
-export interface Item {
-	name: string;
-	objecttype: Objecttype;
-	objectid: string;
-}
-
-export enum Objecttype {
-	Thing = "thing",
-}
-
-export interface ItemSubtype {
-	subtype: SubtypeSubtype[];
-}
-
-export interface SubtypeSubtype {
-	$: Subtype;
-}
-
-export interface Subtype {
-	value: Value;
-}
-
-export enum Value {
-	Boardgame = "boardgame",
-	Boardgameexpansion = "boardgameexpansion",
-	Boardgameimplementation = "boardgameimplementation",
-	Boardgameintegration = "boardgameintegration",
-}
-
-// gets the userID of a username
+//gets the userID of a username
 const getUserID = async (req: Request, res: Response, next: NextFunction) => {
 	// get the post id from the req
 	let id: string = req.params.id;
@@ -119,45 +47,30 @@ const getUserPlays = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	// get the post id from the req
 	let id: string = req.params.id;
-	// get the post
-	let result: AxiosResponse = await axios.get(
-		`https://api.geekdo.com/xmlapi2/plays?username=${id}&subtype=boardgame`,
-		{
-			headers: {
-				Accept: "application/json",
-			},
-		}
-	);
 
-	let post: any = {};
+	const reqBody: any = req.body;
 
-	parseString(result.data, (err: Error, result: Object) => {
-		if (err) {
-			throw err;
-		}
-
-		post = result;
-	});
-
-	let output: Plays = post;
-
-	try {
-		var total: number = Number(output["plays"].$.total);
-	} catch (TypeError) {
-		return res.status(404).json({ message: "404: User not found" });
+	// Validate request
+	if (!req.body) {
+		res.status(400).send({
+			message: "Content can not be empty!",
+		});
 	}
 
-	const numberOfSearches: number = Math.floor(total / 100) + 1;
+	// create a new comparison
+	const filters: { [key: string]: boolean } = {
+		prevowned: reqBody.body.prevowned,
+		own: reqBody.body.own,
+		played: reqBody.body.played,
+		rated: reqBody.body.rated,
+	};
 
-	const iterations: number[] = [...Array(numberOfSearches).keys()];
+	const games: number[] = [];
 
-	const map: Promise<PlayElement[]>[] = iterations.map(async (e: number) => {
-		const page: number = e + 1;
-
-		let result: AxiosResponse = await axios.get(
-			`https://api.geekdo.com/xmlapi2/plays?username=${id}&page=${page}&subtype=boardgame`,
+	if (filters.played === true) {
+		const result: AxiosResponse = await axios.get(
+			`https://api.geekdo.com/xmlapi2/plays?username=${id}`,
 			{
 				headers: {
 					Accept: "application/json",
@@ -165,39 +78,150 @@ const getUserPlays = async (
 			}
 		);
 
-		let postR: any = {};
+		let post: any = {};
+		parseString(result.data, (err: Error, result: Object) => {
+			if (err) {
+				throw err;
+			}
+
+			post = result;
+		});
+
+		const output: Plays = post;
+
+		try {
+			var total: number = Number(output["plays"].$.total);
+		} catch (TypeError) {
+			return res.status(404).json({ message: "404: User not found" });
+		}
+
+		const numberOfSearches: number = Math.floor(total / 100) + 1;
+
+		const iterations: number[] = [...Array(numberOfSearches).keys()];
+
+		const map: Promise<PlayElement[]>[] = iterations.map(async (e: number) => {
+			const page: number = e + 1;
+
+			let result: AxiosResponse = await axios.get(
+				`https://api.geekdo.com/xmlapi2/plays?username=${id}&page=${page}&subtype=boardgame`,
+				{
+					headers: {
+						Accept: "application/json",
+					},
+				}
+			);
+
+			let postR: any = {};
+
+			parseString(result.data, (err: Error, result: Object) => {
+				if (err) {
+					throw err;
+				}
+
+				postR = result;
+			});
+
+			let output: Plays = postR;
+			return output.plays.play;
+		});
+
+		const fullListOfGames = await Promise.all(map);
+
+		try {
+			for (var i = 0; i < fullListOfGames.length; i++) {
+				for (var e = 0; e < fullListOfGames[i].length; e++) {
+					let game: string = fullListOfGames[i][e].item[0]["$"]["objectid"];
+					if (games.includes(Number(game)) === false) {
+						games.push(Number(game));
+					}
+				}
+			}
+		} catch (TypeError) {
+			return res.status(404).json({ message: "404: User not found" });
+		}
+	}
+
+	// get the post id from the re
+	// get the post
+
+	const url: string = `https://www.boardgamegeek.com/xmlapi2/collection?username=${id}&subtype=boardgame&brief=0&excludesubtype=boardgameexpansion&stats=1`;
+	// `https://www.boardgamegeek.com/xmlapi2/collection?username=${id}&subtype=boardgame&brief=1&own=1&played=0`
+
+	const initalQuerry = await axios.get(url, {
+		validateStatus: (status: number) =>
+			status === 429 || status === 200 || status === 202,
+	});
+
+	if (initalQuerry.status === 429) {
+		return res.status(429).json({ message: "Too many requests." });
+	}
+
+	setTimeout(async () => {
+		const result = await axios.get(url, {
+			validateStatus: (status: number) =>
+				status === 429 || status === 200 || status === 202,
+		});
+
+		if (result.status === 429 || result.status === 202) {
+			return res.status(result.status).json({ message: "Too many requests." });
+		}
+
+		let post: any = {};
 
 		parseString(result.data, (err: Error, result: Object) => {
 			if (err) {
 				throw err;
 			}
 
-			postR = result;
+			post = result;
 		});
 
-		let output: Plays = postR;
-		return output.plays.play;
-	});
+		const output: Collection = post;
 
-	const fullListOfGames: PlayElement[][] = await Promise.all(map);
-	let games: string[] = [];
+		const fullListOfGames = output["items"]["item"];
 
-	try {
-		for (var i = 0; i < fullListOfGames.length; i++) {
-			for (var e = 0; e < fullListOfGames[i].length; e++) {
-				let game: string = fullListOfGames[i][e].item[0]["$"]["objectid"];
-				if (games.includes(game) === false) {
-					games.push(game);
+		for (const i in filters) {
+			try {
+				if (filters[i] === true) {
+					if (i === "prevowned") {
+						const filtered = fullListOfGames.filter(
+							(e) => e.status[0].$.prevowned === "1"
+						);
+
+						filtered.forEach((y) => {
+							if (!games.includes(Number(y.$.objectid))) {
+								games.push(Number(y.$.objectid));
+							}
+						});
+					} else if (i === "own") {
+						const filtered = fullListOfGames.filter(
+							(e) => e.status[0].$.own === "1"
+						);
+
+						filtered.forEach((y) => {
+							if (!games.includes(Number(y.$.objectid))) {
+								games.push(Number(y.$.objectid));
+							}
+						});
+					} else if (i === "rated") {
+						const filtered = fullListOfGames.filter(
+							(e) => e.stats[0].rating[0].$.value !== "N/A"
+						);
+
+						filtered.forEach((y) => {
+							if (!games.includes(Number(y.$.objectid))) {
+								games.push(Number(y.$.objectid));
+							}
+						});
+					}
 				}
+			} catch (TypeError) {
+				return res.status(404).json({ message: "404 User not found" });
 			}
 		}
-	} catch (TypeError) {
-		return res.status(404).json({ message: "404: User not found" });
-	}
 
-	return res.status(200).json({
-		message: games,
-	});
+		return res.status(200).json({ message: games });
+	}, 5000);
 };
 
 export default {

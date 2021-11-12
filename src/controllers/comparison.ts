@@ -16,8 +16,6 @@ const postComparisons = async (
 ) => {
 	const reqBody: any = req.body;
 
-	console.log(reqBody);
-
 	// Validate request
 	if (!req.body) {
 		res.status(400).send({

@@ -1,12 +1,16 @@
 import "../App.css";
 import InputUser from "./InputUser";
-import "./InputUser.css";
+import "./css/InputUser.css";
+import SettingsCheckboxes from "./SettingsCheckboxes";
+import { FetchGameOptions, Options } from "../App";
 //import InputChoices from "./InputChoices";
 
 type InputsProps = {
 	onChangedUser: (user: string) => Promise<void>;
 	userValid: boolean;
 	user: string;
+	onChangedSettings: (setting: Options, target: boolean) => Promise<void>;
+	settings: FetchGameOptions;
 };
 
 /**
@@ -15,7 +19,13 @@ type InputsProps = {
  * @returns
  */
 
-function Inputs({ onChangedUser, userValid, user }: InputsProps) {
+function Inputs({
+	onChangedUser,
+	userValid,
+	user,
+	settings,
+	onChangedSettings,
+}: InputsProps) {
 	return (
 		<div className={userValid ? "buttons" : "button"}>
 			{userValid ? (
@@ -26,7 +36,13 @@ function Inputs({ onChangedUser, userValid, user }: InputsProps) {
 					>{`Change User (${user})`}</button>
 				</div>
 			) : (
-				<InputUser onChangedUser={onChangedUser} />
+				<>
+					<InputUser onChangedUser={onChangedUser} />
+					<SettingsCheckboxes
+						onChangedSettings={onChangedSettings}
+						settings={settings}
+					/>
+				</>
 			)}
 		</div>
 	);

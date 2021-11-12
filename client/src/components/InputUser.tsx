@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "./InputUser.css";
+import "./css/InputUser.css";
 
 type InputUserProps = {
 	onChangedUser: (user: string) => Promise<void>;

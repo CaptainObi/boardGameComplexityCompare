@@ -1,7 +1,7 @@
 import React from "react";
-import { GameElement } from "../App";
+import { GameElement } from "../interfaces/GameElement";
 import { Image } from "use-image-color";
-import "./Game.css";
+import "./css/Game.css";
 import "../App.css";
 import useImageColor from "use-image-color";
 

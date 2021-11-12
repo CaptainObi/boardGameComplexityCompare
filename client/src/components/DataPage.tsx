@@ -1,22 +1,10 @@
 import axios, { AxiosResponse } from "axios";
 import MUIDataTable from "mui-datatables";
 import { useState, useEffect } from "react";
-import Header from "./components/Header";
-import { Page } from "./App";
-import "./DataPage.css";
-
-interface Elo {
-	gameID: number;
-	ComplexElo: number;
-	DepthElo: number;
-	thumbnail: string | null;
-	image: string | null;
-	name: string | null;
-	yearpublished: number;
-	rank: number;
-	weight: number;
-	rating: number;
-}
+import Header from "./Header";
+import { Page } from "../App";
+import "./css/DataPage.css";
+import { Elo } from "../interfaces/Elo";
 
 interface Rows {
 	Name: string;

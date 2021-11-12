@@ -1,6 +1,6 @@
 import React from "react";
 import logo from "../BoardGameCompareLogo-01.svg";
-import "./Header.css";
+import "./css/Header.css";
 import { Page } from "../App";
 
 type HeaderProps = {
